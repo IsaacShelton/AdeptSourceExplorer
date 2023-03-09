@@ -1,9 +1,9 @@
 {
-  "name": "electron-vite-react",
-  "version": "2.1.0",
+  "name": "adept-source-viewer",
+  "version": "0.0.1",
   "main": "dist-electron/main/index.js",
-  "description": "Electron Vite React boilerplate.",
-  "author": "草鞋没号 <308487730@qq.com>",
+  "description": "Adept Source Viewer",
+  "author": "Isaac Shelton",
   "license": "MIT",
   "private": true,
   "debug": {
@@ -15,8 +15,7 @@
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",
     "preview": "vite preview",
-    "pree2e": "vite build --mode=test",
-    "e2e": "playwright test"
+    "pree2e": "vite build --mode=test"
   },
   "devDependencies": {
     "@types/node": "^18.14.6",
