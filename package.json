@@ -1,5 +1,5 @@
 {
-    "name": "adept-source-viewer",
+    "name": "adept-source-explorer",
     "version": "0.0.1",
     "main": "dist-electron/main/index.js",
     "description": "Adept Source Explorer",

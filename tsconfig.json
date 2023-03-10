@@ -21,6 +21,6 @@
             "@/*": ["src/*"]
         }
     },
-    "include": ["src", "electron/preload/insight"],
+    "include": ["src"],
     "references": [{ "path": "./tsconfig.node.json" }]
 }
