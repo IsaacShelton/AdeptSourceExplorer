@@ -43,7 +43,7 @@ const indexHtml = join(process.env.DIST, 'index.html');
 
 async function createWindow() {
     win = new BrowserWindow({
-        title: 'Adept Source Viewer',
+        title: 'Adept Source Explorer',
         icon: join(process.env.PUBLIC, 'favicon.ico'),
         width: 1280,
         height: 800,

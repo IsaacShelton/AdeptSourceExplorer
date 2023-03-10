@@ -54,6 +54,18 @@ const OverviewFlow = () => {
             onConnect={onConnect}
             onInit={onInit}
             fitView
+            fitViewOptions={
+                {
+                    nodes: [
+                        { id: 'a0' },
+                        { id: 'a1' },
+                        { id: 'b0' },
+                        { id: 'c0' },
+                        { id: 'c1' },
+                    ]
+                }
+            }
+            zoomOnDoubleClick={false}
             attributionPosition="top-right"
             nodeTypes={nodeTypes}
             proOptions={{ hideAttribution: true }}
@@ -61,7 +73,7 @@ const OverviewFlow = () => {
             <MiniMap nodeColor={nodeColor} maskColor="#3a3a3a" nodeBorderRadius={20} style={minimapStyle} zoomable pannable />
             {/* <Controls /> */}
             <Background color="#aaa" gap={16} />
-        </ReactFlow>
+        </ReactFlow >
     );
 };
 
