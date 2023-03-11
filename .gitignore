@@ -8,3 +8,4 @@ dist-electron
 !.vscode/extensions.json
 .DS_Store
 release
+database.db
