@@ -28,6 +28,16 @@ async function run(format: string, bindings: initSqlJs.BindParams | undefined = 
     (await database).prepare(format).run(bindings);
 }
 
+async function insert(format: string, bindings: initSqlJs.BindParams | undefined = undefined): Promise<number> {
+    (await database).prepare(format).run(bindings);
+    return await getInsertedID();
+}
+
+async function getInsertedID(): Promise<number> {
+    let last_row_info: any[] = await query("SELECT LAST_INSERT_ROWID() AS ProjectID");
+    return last_row_info[0].ProjectID;
+}
+
 async function save(): Promise<void> {
     return new Promise(function (resolve, reject) {
         database.then((db) => {
@@ -48,4 +58,4 @@ async function tables(): Promise<string[]> {
     `)).map((row: any) => row.name);
 }
 
-export default { query, run, save, tables };
+export default { query, run, save, tables, insert, getInsertedID };
