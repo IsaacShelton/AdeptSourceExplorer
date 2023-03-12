@@ -40,8 +40,10 @@
         "node": "^19.6.0"
     },
     "dependencies": {
+        "react-hooks-global-state": "^2.1.0",
         "react-spinners": "^0.13.8",
         "reactflow": "^11.5.6",
+        "recharts": "^2.4.3",
         "sql.js": "^1.8.0",
         "styled-components": "^5.3.8"
     }

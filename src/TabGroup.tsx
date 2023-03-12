@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
+import CallDistribution from './CallDistribution';
 import OverviewFlow from './OverviewFlow';
 
 const Tab = styled.button`
@@ -60,7 +61,18 @@ function useWindowSize() {
     return size;
 }
 
-const types = ['Query', 'Function View'];
+const types = ['Query', 'Function View', 'Call Distribution'];
+
+function tabContent(kind: string): JSX.Element {
+    switch (kind) {
+        case 'Function View':
+            return <OverviewFlow />;
+        case 'Call Distribution':
+            return <CallDistribution />;
+        default:
+            return <p></p>;
+    }
+}
 
 export default function TabGroup() {
     const [active, setActive] = useState(types[0]);
@@ -70,14 +82,9 @@ export default function TabGroup() {
         <div style={{
             position: "absolute", display: "flex", margin: 0, "padding": 0, width, height
         }} >
-            {active == "Function View" ? (
-                <div style={{ position: "absolute", width: "100%", height: "100%" }}>
-                    <OverviewFlow />
-                </div>
-            ) : (
-                <p></p>
-            )
-            }
+            <div style={{ position: "absolute", width: "100%", height: "100%" }}>
+                {tabContent(active)}
+            </div>
             <ButtonGroup>
                 {types.map(type => (
                     <Tab

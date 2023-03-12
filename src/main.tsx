@@ -44,8 +44,33 @@ async function createProject(rootFilename: string): Promise<number> {
                 FunctionEndStride INT,
                 ProjectID INT,
 
-                CONSTRAINT fk_FunctionID
+                CONSTRAINT fk_ProjectID
                     FOREIGN KEY (ProjectID) REFERENCES Project(ProjectID)
+                    ON DELETE CASCADE
+            )
+        `);
+
+    await sqlite.run(`
+            CREATE TABLE IF NOT EXISTS Composite (
+                CompositeID INTEGER PRIMARY KEY AUTOINCREMENT,
+                CompositeName VARCHAR(1024),
+                CompositeDefinition VARCHAR(4096),
+                ProjectID INT,
+
+                CONSTRAINT fk_ProjectID
+                    FOREIGN KEY (ProjectID) REFERENCES Project(ProjectID)
+                    ON DELETE CASCADE
+            )
+        `);
+
+    await sqlite.run(`
+            CREATE TABLE IF NOT EXISTS Call (
+                CallCallee VARCHAR(1024),
+                CallAmount INT,
+                CallCallerFunctionID INT,
+
+                CONSTRAINT fk_FunctionID
+                    FOREIGN KEY (CallCallerFunctionID) REFERENCES Function(FunctionID)
                     ON DELETE CASCADE
             )
         `);
@@ -57,10 +82,13 @@ async function createProject(rootFilename: string): Promise<number> {
     });
 
     let funcs: any[] = result?.ast?.functions;
+    let composites: any[] = result?.ast?.composites;
+    let calls: any[] = result?.calls;
+    let funcIndices: number[] = [];
 
     if (funcs) {
         for (let func of funcs) {
-            await sqlite.run(`INSERT INTO Function VALUES (
+            funcIndices.push(await sqlite.insert(`INSERT INTO Function VALUES (
                     NULL,
                     :FunctionName,
                     :FunctionDefinition,
@@ -73,32 +101,63 @@ async function createProject(rootFilename: string): Promise<number> {
                 )`, {
                 ":FunctionName": func.name,
                 ":FunctionDefinition": func.definition,
-                ":FunctionSourceObject": null,
-                ":FunctionSourceIndex": null,
-                ":FunctionSourceStride": null,
-                ":FunctionEndIndex": null,
-                ":FunctionEndStride": null,
+                ":FunctionSourceObject": func.source.object,
+                ":FunctionSourceIndex": func.source.index,
+                ":FunctionSourceStride": func.source.stride,
+                ":FunctionEndIndex": func.end.index,
+                ":FunctionEndStride": func.end.stride,
+                ":ProjectID": projectID,
+            }));
+        }
+    }
+
+    if (composites) {
+        for (let composite of composites) {
+            await sqlite.run(`INSERT INTO Composite VALUES (
+                NULL,
+                :CompositeName,
+                :CompositeDefinition,
+                :ProjectID
+            )`, {
+
+                ":CompositeName": composite.name,
+                ":CompositeDefinition": composite.definition,
                 ":ProjectID": projectID,
             });
-            console.log(func);
         }
+    }
 
-        console.log("success");
-        console.log(await sqlite.tables());
-        console.log(result);
+    if (calls) {
+        for (let funcIndex = 0; funcIndex < calls.length; funcIndex++) {
+            let callsTo = calls[funcIndex];
+
+            for (let call of callsTo) {
+                await sqlite.run(`INSERT INTO Call VALUES (
+                    :CallCallee,
+                    :CallAmount,
+                    :CallCallerFunctionID
+                )`, {
+                    ":CallCallee": call.name,
+                    ":CallAmount": call.count,
+                    ":CallCallerFunctionID": funcIndices[funcIndex],
+                });
+            }
+        }
     }
 
     console.log("Functions list: ", await sqlite.query("SELECT * FROM Function"));
     console.log("Functions query test: ", await sqlite.query("SELECT FunctionDefinition FROM Function WHERE FunctionDefinition LIKE '%?%' ORDER BY FunctionDefinition ASC"));
+    console.log("Composites list: ", await sqlite.query("SELECT * FROM Composite"));
+    console.log("Calls list: ", await sqlite.query("SELECT CallCallee, sum(CallAmount) FROM Call GROUP BY CallCallee ORDER BY sum(CallAmount) DESC"));
+    console.log(result);
 
     return projectID;
 }
 
-createProject("/Users/isaac/AdeptProjects/GenericCardGame/main.adept").then(() => { });
-
-// createProject("/Users/isaac/Projects/Adept/build/macOS-Debug/import/2.8/basics.adept").then(() => {
-
-// });
+// createProject("/Users/isaac/AdeptProjects/GenericCardGame/main.adept").then(() => { });
+createProject("/Users/isaac/Projects/Adept/build/macOS-Debug/import/2.8/basics.adept").then(() => { });
+// createProject("/Users/isaac/AdeptProjects/Box2D/box2d/box2d.adept").then(() => { });
+// createProject("/Users/isaac/AdeptProjects/MiniBox/main.adept").then(() => { });
 
 sqlite.run("DROP TABLE IF EXISTS hello");
 sqlite.run("DROP TABLE IF EXISTS functions");
