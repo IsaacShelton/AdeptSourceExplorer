@@ -6,74 +6,85 @@ import './CallDistribution.scss';
 
 const { useGlobalState } = createGlobalState({ mode: '', data: null as any[] | null });
 
-let modes = ['callee-vs-frequency', 'function-name-vs-frequency'];
-
-function getLabelsForMode(mode: string) {
-    switch (mode) {
-        case 'callee-vs-frequency':
-            return ['Function Name', 'Times Called', 'Function Call Frequency'];
-        case 'function-name-vs-frequency':
-            return ['Function Name', 'Number of Overloads', 'Function Overload Frequency'];
-        default:
-            return ['', ''];
-    }
-}
-
 export default function CallDistribution() {
     let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
 
-    let nextMode = () => {
-        let index = modes.indexOf(mode);
-
-        if (index < 0) {
-            setMode(modes[0]);
-        } else {
-            setMode(modes[(index + 1) % modes.length]);
-        }
-
-        setData(null);
-    };
+    const modes = ['callee-vs-frequency', 'function-name-vs-frequency'];
 
     if (mode == '') {
         setMode(modes[0]);
         setData(null);
     }
 
-    if (data == null) {
+    const getInfoForMode = (mode: string) => {
         switch (mode) {
             case 'callee-vs-frequency':
-                sqlite.query(`SELECT CallCallee, sum(CallAmount) as NumTimes FROM Call GROUP BY CallCallee ORDER BY NumTimes DESC, CallCallee ASC`).then((rows: any[]) => {
-                    let newData = [];
-                    for (let row of rows) {
-                        newData.push({
-                            name: row['CallCallee'],
-                            count: row.NumTimes,
-                        });
-                    }
+                return {
+                    xLabel: 'Function Name',
+                    yLabel: 'Times Called',
+                    title: 'Function Call Frequency',
+                    layout: 'vertical-barchart',
+                    fetch: async () => {
+                        let rows = await sqlite.query(`SELECT CallCallee, sum(CallAmount) as NumTimes FROM Call GROUP BY CallCallee ORDER BY NumTimes DESC, CallCallee ASC`);
 
-                    setData(newData);
-                });
-                break;
+                        setData(rows.map((row: any) => {
+                            return {
+                                name: row['CallCallee'],
+                                count: row['NumTimes']
+                            };
+                        }))
+                    }
+                };
             case 'function-name-vs-frequency':
-                sqlite.query(`SELECT FunctionName, count(*) as Frequency FROM Function GROUP BY FunctionName ORDER BY Frequency DESC, FunctionName ASC`).then((rows: any[]) => {
-                    data = [];
+                return {
+                    xLabel: 'Function Name',
+                    yLabel: 'Number of Overloads',
+                    title: 'Function Overload Frequency',
+                    layout: 'vertical-barchart',
+                    fetch: async () => {
+                        let rows = await sqlite.query(`SELECT FunctionName, count(*) as Frequency FROM Function GROUP BY FunctionName ORDER BY Frequency DESC, FunctionName ASC`);
 
-                    let newData = [];
-                    for (let row of rows) {
-                        newData.push({
-                            name: row['FunctionName'],
-                            count: row.Frequency,
-                        });
+                        setData(rows.map((row: any) => {
+                            return {
+                                name: row['FunctionName'],
+                                count: row['Frequency'],
+                            };
+                        }));
                     }
-
-                    setData(newData);
-                });
-                break;
+                };
+            default:
+                return {
+                    xLabel: '',
+                    yLabel: '',
+                    title: '',
+                    layout: 'none',
+                    fetch: async () => { },
+                };
         }
-    }
+    };
 
-    let [xLabel, yLabel, title] = getLabelsForMode(mode);
+    const getChart = (layout: string) => {
+        switch (layout) {
+            case 'none':
+                return <div></div>
+            case 'vertical-barchart':
+                return <BarChart width={800} height={600} data={data as object[]} layout="vertical">
+                    <XAxis type="number" label={{ value: yLabel, position: "insideBottom", dy: 0 }} height={48} /> {/* scale="log" domain={[0.9, 'auto']} */}
+                    <YAxis dataKey="name" type="category" interval={data ? Math.floor(0.1 * data.length) : 0} label={{ value: xLabel, position: "insideLeft", dy: 0, angle: -90 }} width={128} />
+                    <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} />
+                    <Bar dataKey="count" fill="#8884d8" />
+                </BarChart>
+            default:
+                throw new Error("Unknown chart layout kind");
+        }
+    };
+
+    let { xLabel, yLabel, title, fetch, layout } = getInfoForMode(mode);
+
+    if (data == null) {
+        fetch();
+    }
 
     return (
         <div style={{ marginTop: "48px", width: "100%" }}>
@@ -84,7 +95,7 @@ export default function CallDistribution() {
                         setData(null);
                     }} value={mode} style={{ "fontSize": 20, "fontFamily": "monospace, sans-serif" }}>
                         {modes.map((mode) => {
-                            return <option value={mode} key={mode}>{getLabelsForMode(mode)[2]}</option>
+                            return <option value={mode} key={mode}>{title}</option>
                         })}
                     </select>
                 </div>
@@ -92,12 +103,7 @@ export default function CallDistribution() {
             <div style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0 }}>
                 <div style={{ position: "relative", left: "-32px" }}>
                     <ResponsiveContainer width={800} height={600}>
-                        <BarChart width={800} height={600} data={data as object[]} layout="vertical">
-                            <XAxis type="number" label={{ value: yLabel, position: "insideBottom", dy: 0 }} height={48} /> {/* scale="log" domain={[0.9, 'auto']} */}
-                            <YAxis dataKey="name" type="category" interval={data ? Math.floor(0.1 * data.length) : 0} label={{ value: xLabel, position: "insideLeft", dy: 0, angle: -90 }} width={128} />
-                            <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} />
-                            <Bar dataKey="count" fill="#8884d8" />
-                        </BarChart>
+                        {getChart(layout)}
 
                         {/* <BarChart width={600} height={600} data={data as object[]}>
                             <text x={600 / 2} y={20} fill="white" style={{ "fontFamily": "monospace, sans-serif", marginBottom: "64px" }} textAnchor="middle" dominantBaseline="central">
