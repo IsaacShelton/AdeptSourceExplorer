@@ -1,6 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react';
 import styled from 'styled-components';
 import CallDistribution from './CallDistribution';
+import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 
 const Tab = styled.button`
@@ -61,7 +62,7 @@ function useWindowSize() {
     return size;
 }
 
-const types = ['Query', 'Function View', 'Call Distribution'];
+const types = ['Query', 'Function View', 'Call Distribution', 'Connection Graph'];
 
 function tabContent(kind: string): JSX.Element {
     switch (kind) {
@@ -69,6 +70,8 @@ function tabContent(kind: string): JSX.Element {
             return <OverviewFlow />;
         case 'Call Distribution':
             return <CallDistribution />;
+        case 'Connection Graph':
+            return <ConnectionGraph />;
         default:
             return <p></p>;
     }

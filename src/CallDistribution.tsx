@@ -1,10 +1,11 @@
-import React, { PureComponent, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, CartesianAxis, BarChart, Bar, Legend } from 'recharts';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import sqlite from './sqlite';
 import { createGlobalState } from 'react-hooks-global-state';
 import './CallDistribution.scss';
 
 const { useGlobalState } = createGlobalState({ mode: '', data: null as any[] | null });
+
+import { CustomTooltipContent } from './CustomTooltip';
 
 export default function CallDistribution() {
     let [data, setData] = useGlobalState('data');
@@ -36,23 +37,30 @@ export default function CallDistribution() {
                         }))
                     }
                 };
-            case 'function-name-vs-frequency':
+            case 'function-name-vs-frequency': {
                 return {
-                    xLabel: 'Function Name',
-                    yLabel: 'Number of Overloads',
+                    xLabel: 'Number of Overloads',
+                    yLabel: 'Frequency',
                     title: 'Function Overload Frequency',
-                    layout: 'vertical-barchart',
+                    layout: 'horizontal-barchart',
+                    customTooltip: CustomTooltipContent,
+                    labelFormatter: (value: any) => `Having ${value} Overloads`,
                     fetch: async () => {
-                        let rows = await sqlite.query(`SELECT FunctionName, count(*) as Frequency FROM Function GROUP BY FunctionName ORDER BY Frequency DESC, FunctionName ASC`);
+                        let rows = await sqlite.query(`
+                                SELECT Count, count(*) as Frequency FROM (
+                                    SELECT FunctionName, count(*) as Count FROM Function GROUP BY FunctionName ORDER BY Count DESC, FunctionName ASC
+                                ) as SubTable GROUP BY Count
+                            `);
 
                         setData(rows.map((row: any) => {
                             return {
-                                name: row['FunctionName'],
+                                name: row['Count'],
                                 count: row['Frequency'],
                             };
                         }));
                     }
                 };
+            }
             default:
                 return {
                     xLabel: '',
@@ -64,6 +72,8 @@ export default function CallDistribution() {
         }
     };
 
+    let { xLabel, yLabel, title, fetch, layout, customTooltip, labelFormatter } = getInfoForMode(mode);
+
     const getChart = (layout: string) => {
         switch (layout) {
             case 'none':
@@ -72,15 +82,20 @@ export default function CallDistribution() {
                 return <BarChart width={800} height={600} data={data as object[]} layout="vertical">
                     <XAxis type="number" label={{ value: yLabel, position: "insideBottom", dy: 0 }} height={48} /> {/* scale="log" domain={[0.9, 'auto']} */}
                     <YAxis dataKey="name" type="category" interval={data ? Math.floor(0.1 * data.length) : 0} label={{ value: xLabel, position: "insideLeft", dy: 0, angle: -90 }} width={128} />
-                    <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} />
+                    <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} content={customTooltip as any} labelFormatter={labelFormatter} />
+                    <Bar dataKey="count" fill="#8884d8" />
+                </BarChart>
+            case 'horizontal-barchart':
+                return <BarChart width={800} height={600} data={data as object[]}>
+                    <XAxis dataKey="name" label={{ value: xLabel, position: "insideBottom", dy: 0 }} height={54} interval={data ? Math.floor(0.1 * data.length) : 0} /> {/*angle={-90} textAnchor="end" height={128} */}
+                    <YAxis label={{ value: yLabel, position: "insideLeft", angle: -90, dx: 10 }} />
+                    <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} content={customTooltip as any} labelFormatter={labelFormatter} />
                     <Bar dataKey="count" fill="#8884d8" />
                 </BarChart>
             default:
                 throw new Error("Unknown chart layout kind");
         }
     };
-
-    let { xLabel, yLabel, title, fetch, layout } = getInfoForMode(mode);
 
     if (data == null) {
         fetch();
@@ -95,7 +110,7 @@ export default function CallDistribution() {
                         setData(null);
                     }} value={mode} style={{ "fontSize": 20, "fontFamily": "monospace, sans-serif" }}>
                         {modes.map((mode) => {
-                            return <option value={mode} key={mode}>{title}</option>
+                            return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
                         })}
                     </select>
                 </div>
