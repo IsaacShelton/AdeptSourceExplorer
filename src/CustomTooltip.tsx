@@ -93,6 +93,10 @@ export class CustomTooltipContent<TValue extends ValueType, TName extends NameTy
                         value = formatted;
                     }
                 }
+
+                let topNames = entry?.payload?.topNames;
+                let string = topNames.join(', ');
+
                 return (
                     // eslint-disable-next-line react/no-array-index-key
                     <li className="recharts-tooltip-item" key={`tooltip-item-${i}`} style={finalItemStyle}>
@@ -102,7 +106,7 @@ export class CustomTooltipContent<TValue extends ValueType, TName extends NameTy
                         <span className="recharts-tooltip-item-unit">{entry.unit || ''}</span>
                         <br />
                         <span style={finalLabelStyle}>
-                            strlen, malloc, get, ...
+                            {string}
                         </span>
                     </li >
                 );

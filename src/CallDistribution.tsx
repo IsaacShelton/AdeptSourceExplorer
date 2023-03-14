@@ -52,10 +52,26 @@ export default function CallDistribution() {
                                 ) as SubTable GROUP BY Count
                             `);
 
+                        let results: any[] = await Promise.all(rows.map((row: any) => parseInt(row['Count'])).map(
+                            (count: any) => sqlite.query(`SELECT FunctionName, count(*) as Count FROM Function GROUP BY FunctionName HAVING Count = :Count ORDER BY FunctionName ASC LIMIT :Limit`, {
+                                ":Count": count,
+                                ":Limit": 3,
+                            })
+                        ));
+
+                        let map = new Map();
+
+                        for (let array of results) {
+                            if (array.length == 0) continue;
+
+                            map.set(array[0].Count, array.map((item: any) => item.FunctionName));
+                        }
+
                         setData(rows.map((row: any) => {
                             return {
                                 name: row['Count'],
                                 count: row['Frequency'],
+                                topNames: map.get(parseInt(row['Count'])),
                             };
                         }));
                     }
