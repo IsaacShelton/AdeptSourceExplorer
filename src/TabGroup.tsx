@@ -5,6 +5,8 @@ import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 
 const Tab = styled.button`
+  white-space: nowrap;
+  user-select: none;
   font-size: 20px;
   padding: 10px 60px;
   margin-left: 4px;
@@ -62,7 +64,7 @@ function useWindowSize() {
     return size;
 }
 
-const types = ['Query', 'Function View', 'Call Distribution', 'Connection Graph'];
+const types = ['Project', 'Function View', 'Call Distribution', 'Connection Graph'];
 
 function tabContent(kind: string): JSX.Element {
     switch (kind) {

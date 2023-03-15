@@ -119,12 +119,12 @@ export default function CallDistribution() {
 
     return (
         <div style={{ marginTop: "48px", width: "100%" }}>
-            <div style={{ "display": "flex", justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
                 <div className="custom-select">
                     <select onChange={(event) => {
                         setMode(event.target.value);
                         setData(null);
-                    }} value={mode} style={{ "fontSize": 20, "fontFamily": "monospace, sans-serif" }}>
+                    }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', userSelect: 'none' }}>
                         {modes.map((mode) => {
                             return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
                         })}

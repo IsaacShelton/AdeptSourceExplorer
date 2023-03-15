@@ -175,12 +175,12 @@ export function ConnectionGraph() {
     // invalidation.then(() => simulation.stop());
 
     return <span>
-        <div style={{ position: 'absolute', width: '100%', "display": "flex", justifyContent: 'center', alignItems: 'center', marginTop: 48 }}>
+        <div style={{ position: 'absolute', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 48 }}>
             <div className="custom-select">
                 <select onChange={(event) => {
                     setMode(event.target.value);
                     setData(null);
-                }} value={mode} style={{ "fontSize": 20, "fontFamily": "monospace, sans-serif", borderRadius: '50px' }}>
+                }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', borderRadius: '50px', userSelect: 'none' }}>
                     {modes.map((mode) => {
                         return <option value={mode} key={mode}>{mode}</option>
                     })}
