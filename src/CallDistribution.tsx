@@ -40,11 +40,11 @@ export default function CallDistribution() {
             case 'function-name-vs-frequency': {
                 return {
                     xLabel: 'Number of Overloads',
-                    yLabel: 'Frequency',
+                    yLabel: 'Number of Functions',
                     title: 'Function Overload Frequency',
                     layout: 'horizontal-barchart',
                     customTooltip: CustomTooltipContent,
-                    labelFormatter: (value: any) => `Having ${value} Overloads`,
+                    labelFormatter: (value: any) => `Having ${value} Overload${value > 1 ? 's' : ''}`,
                     fetch: async () => {
                         let rows = await sqlite.query(`
                                 SELECT Count, count(*) as Frequency FROM (
@@ -55,7 +55,7 @@ export default function CallDistribution() {
                         let results: any[] = await Promise.all(rows.map((row: any) => parseInt(row['Count'])).map(
                             (count: any) => sqlite.query(`SELECT FunctionName, count(*) as Count FROM Function GROUP BY FunctionName HAVING Count = :Count ORDER BY FunctionName ASC LIMIT :Limit`, {
                                 ":Count": count,
-                                ":Limit": 3,
+                                ":Limit": 4,
                             })
                         ));
 
@@ -104,7 +104,7 @@ export default function CallDistribution() {
             case 'horizontal-barchart':
                 return <BarChart width={800} height={600} data={data as object[]}>
                     <XAxis dataKey="name" label={{ value: xLabel, position: "insideBottom", dy: 0 }} height={54} interval={data ? Math.floor(0.1 * data.length) : 0} /> {/*angle={-90} textAnchor="end" height={128} */}
-                    <YAxis label={{ value: yLabel, position: "insideLeft", angle: -90, dx: 10 }} />
+                    <YAxis label={{ value: yLabel, position: "insideLeft", angle: -90, dx: -2 }} />
                     <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} content={customTooltip as any} labelFormatter={labelFormatter} />
                     <Bar dataKey="count" fill="#8884d8" />
                 </BarChart>

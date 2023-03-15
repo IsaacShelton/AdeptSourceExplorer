@@ -95,7 +95,8 @@ export class CustomTooltipContent<TValue extends ValueType, TName extends NameTy
                 }
 
                 let topNames = entry?.payload?.topNames;
-                let string = topNames.join(', ');
+                let string = topNames.slice(0, 3).join(', ');
+
 
                 return (
                     // eslint-disable-next-line react/no-array-index-key
@@ -107,6 +108,9 @@ export class CustomTooltipContent<TValue extends ValueType, TName extends NameTy
                         <br />
                         <span style={finalLabelStyle}>
                             {string}
+                        </span>
+                        <span style={{ ...finalLabelStyle, fontStyle: 'italic ', color: '#777777' }}>
+                            {topNames.length > 3 ? ', and more' : ''}
                         </span>
                     </li >
                 );
