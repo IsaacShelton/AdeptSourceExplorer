@@ -154,8 +154,8 @@ async function createProject(rootFilename: string): Promise<number> {
     return projectID;
 }
 
-// createProject("/Users/isaac/AdeptProjects/GenericCardGame/main.adept").then(() => { });
-createProject("/Users/isaac/Projects/Adept/build/macOS-Debug/import/2.8/basics.adept").then(() => { });
+createProject("/Users/isaac/AdeptProjects/GenericCardGame/main.adept").then(() => { });
+// createProject("/Users/isaac/Projects/Adept/build/macOS-Debug/import/2.8/basics.adept").then(() => { });
 // createProject("/Users/isaac/AdeptProjects/Box2D/box2d/box2d.adept").then(() => { });
 // createProject("/Users/isaac/AdeptProjects/MiniBox/main.adept").then(() => { });
 

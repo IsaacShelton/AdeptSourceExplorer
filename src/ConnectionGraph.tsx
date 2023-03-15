@@ -1,13 +1,17 @@
 
 import * as d3 from 'd3';
 import path from 'path';
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { createGlobalState } from 'react-hooks-global-state';
 import sqlite from './sqlite';
 
+// @ts-ignore
+import { forceManyBodyReuse } from "d3-force-reuse";
+
+
 const drag = (simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>) => {
     function dragStarted(event: any, d: any) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active) simulation.alphaTarget(0.7).restart();
         d.fx = d.x;
         d.fy = d.y;
     }
@@ -65,7 +69,21 @@ export function ConnectionGraph() {
                 });
             }
 
-            console.log(newData);
+            // Pre-calculations
+            newData.radius = 8;
+            newData.color = '#00000000';
+            newData.charge = -100;
+            for (let node of newData.children) {
+                node.radius = 8;
+                node.color = '#00000000';
+                node.charge = -200;
+
+                for (let child of node.children) {
+                    child.radius = 3.5;
+                    child.color = '#8884d8';
+                    child.charge = -10;
+                }
+            }
 
             setData(newData);
         });
@@ -79,8 +97,8 @@ export function ConnectionGraph() {
         const nodes = root.descendants();
 
         const simulation = d3.forceSimulation(nodes as any)
-            .force("link", d3.forceLink(links as any).id((d: any) => d.id).distance(0).strength(1))
-            .force("charge", d3.forceManyBody().strength((d: any) => d?.data?.functionName ? -50 : -1000))
+            .force("link", d3.forceLink(links as any).id((d: any) => d.id).distance(0).strength(0.3))
+            .force("charge", d3.forceManyBody().strength((d: any) => d.data.charge))
             .force("x", d3.forceX())
             .force("y", d3.forceY());
 
@@ -96,15 +114,14 @@ export function ConnectionGraph() {
 
         const label = svg.append("g")
             .selectAll("text")
-            .data(nodes)
+            .data(nodes.filter((d: any) => d?.data?.name != null))
             .join("text")
             .style("user-selection", "none")
-            .text((d: any) => d.data.name ?? d.data.functionName)
+            .text((d: any) => d.data.name)
             .attr("fill", '#FFFFFF')
             .attr("text-anchor", "middle")
             .style("font-size", 10)
             .style("font-family", "monospace, sans-serif")
-            .style("opacity", (d: any) => d.data.name ? 1 : 0)
 
         const node = svg.append("g")
             .attr("fill", "#fff")
@@ -113,36 +130,36 @@ export function ConnectionGraph() {
             .selectAll("circle")
             .data(nodes)
             .join("circle")
-            .attr("fill", d => d.children ? "#8884d800" : "#8884d8")
-            .attr("stroke", d => d.children ? "#8884d800" : "#8884d8")
-            .attr("r", (d: any) => d.data.functionName ? 3.5 : 10)
-            .on('mouseover', function (d: any) {
-                label.style({ opacity: '1.0', color: 'white' } as any);
-                // d.style("opacity", 1);
-                // d3.select(this).style("opacity", 1);
-                // console.log(d3.select(this));
+            .attr("fill", (d: any) => d.data.color)
+            .attr("stroke", (d: any) => d.data.color)
+            .attr("r", (d: any) => d.data.radius)
+            // .on('mouseover', function (d: any) {
+            //     // label.style({ opacity: '1.0', color: 'white' } as any);
+            //     // d.style("opacity", 1);
+            //     // d3.select(this).style("opacity", 1);
+            //     // console.log(d3.select(this));
 
-                // -------------------------
+            //     // -------------------------
 
-                // d3.select(d.parentNode).append("text")//appending it to path's parent which is the g(group) DOM
-                //     .attr("transform", function () {
-                //         return "rotate(" + 0 + ")";
-                //     })
-                //     .attr("dx", "6") // margin
-                //     .attr("dy", ".35em") // vertical-align
-                //     .attr("class", "mylabel")//adding a label class
-                //     .text(function () {
-                //         return d.name;
-                //     });
-            })
-            .on('mouseout', function (d) {
-                // d3.select(this).style("opacity", 0);
-                label.style({ opacity: '0.0' } as any);
+            //     // d3.select(d.parentNode).append("text")//appending it to path's parent which is the g(group) DOM
+            //     //     .attr("transform", function () {
+            //     //         return "rotate(" + 0 + ")";
+            //     //     })
+            //     //     .attr("dx", "6") // margin
+            //     //     .attr("dy", ".35em") // vertical-align
+            //     //     .attr("class", "mylabel")//adding a label class
+            //     //     .text(function () {
+            //     //         return d.name;
+            //     //     });
+            // })
+            // .on('mouseout', function (d) {
+            //     // d3.select(this).style("opacity", 0);
+            //     // label.style({ opacity: '0.0' } as any);
 
-                // -------------------------
+            //     // -------------------------
 
-                // d3.selectAll(".mylabel").remove();
-            })
+            //     // d3.selectAll(".mylabel").remove();
+            // })
             .call(drag(simulation) as any);
 
         simulation.on("tick", () => {
@@ -170,9 +187,11 @@ export function ConnectionGraph() {
 
             div.appendChild(svg.node() as Node);
         }
-    }, [data]);
 
-    // invalidation.then(() => simulation.stop());
+        return () => {
+            simulation.stop();
+        }
+    }, [data]);
 
     return <span>
         <div style={{ position: 'absolute', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 48 }}>
