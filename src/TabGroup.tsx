@@ -87,9 +87,9 @@ export default function TabGroup() {
         <div style={{
             position: "absolute", display: "flex", margin: 0, "padding": 0, width, height
         }} >
-            <div style={{ position: "absolute", width: "100%", height: "100%" }}>
-                {tabContent(active)}
-            </div>
+
+            {tabContent(active)}
+
             <ButtonGroup>
                 {types.map(type => (
                     <Tab

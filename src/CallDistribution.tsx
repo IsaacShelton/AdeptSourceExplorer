@@ -118,25 +118,26 @@ export default function CallDistribution() {
     }
 
     return (
-        <div style={{ marginTop: "48px", width: "100%" }}>
-            <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
-                <div className="custom-select">
-                    <select onChange={(event) => {
-                        setMode(event.target.value);
-                        setData(null);
-                    }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', userSelect: 'none' }}>
-                        {modes.map((mode) => {
-                            return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
-                        })}
-                    </select>
+        <div style={{ position: "absolute", width: "100%", height: "100%" }}>
+            <div style={{ marginTop: "48px", width: "100%" }}>
+                <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
+                    <div className="custom-select">
+                        <select onChange={(event) => {
+                            setMode(event.target.value);
+                            setData(null);
+                        }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', userSelect: 'none' }}>
+                            {modes.map((mode) => {
+                                return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
+                            })}
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0 }}>
-                <div style={{ position: "relative", left: "-32px" }}>
-                    <ResponsiveContainer width={800} height={600}>
-                        {getChart(layout)}
+                <div style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0 }}>
+                    <div style={{ position: "relative", left: "-32px" }}>
+                        <ResponsiveContainer width={800} height={600}>
+                            {getChart(layout)}
 
-                        {/* <BarChart width={600} height={600} data={data as object[]}>
+                            {/* <BarChart width={600} height={600} data={data as object[]}>
                             <text x={600 / 2} y={20} fill="white" style={{ "fontFamily": "monospace, sans-serif", marginBottom: "64px" }} textAnchor="middle" dominantBaseline="central">
                                 <tspan fontSize="28">{title}</tspan>
                             </text>
@@ -146,7 +147,7 @@ export default function CallDistribution() {
                             <Bar dataKey="count" fill="#8884d8" />
                         </BarChart> */}
 
-                        {/* <AreaChart
+                            {/* <AreaChart
                         width={600}
                         height={600}
                         data={data ?? []}
@@ -165,9 +166,10 @@ export default function CallDistribution() {
                             <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} />
                             <Area type="monotone" dataKey="count" stroke="#8884d8" fill="#8884d8" />
                         </AreaChart> */}
-                    </ResponsiveContainer>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
-            </div>
-        </div >
+            </div >
+        </div>
     );
 }

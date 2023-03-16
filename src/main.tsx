@@ -55,6 +55,9 @@ async function createProject(rootFilename: string): Promise<number> {
                 CompositeID INTEGER PRIMARY KEY AUTOINCREMENT,
                 CompositeName VARCHAR(1024),
                 CompositeDefinition VARCHAR(4096),
+                CompositeSourceObject VARCHAR(4096),
+                CompositeSourceIndex INT,
+                CompositeSourceStride Int,
                 ProjectID INT,
 
                 CONSTRAINT fk_ProjectID
@@ -117,11 +120,17 @@ async function createProject(rootFilename: string): Promise<number> {
                 NULL,
                 :CompositeName,
                 :CompositeDefinition,
+                :CompositeSourceObject,
+                :CompositeSourceIndex,
+                :CompositeSourceStride,
                 :ProjectID
             )`, {
 
                 ":CompositeName": composite.name,
                 ":CompositeDefinition": composite.definition,
+                ":CompositeSourceObject": composite.source.object,
+                ":CompositeSourceIndex": composite.source.index,
+                ":CompositeSourceStride": composite.source.stride,
                 ":ProjectID": projectID,
             });
         }

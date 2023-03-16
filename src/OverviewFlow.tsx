@@ -45,7 +45,7 @@ const OverviewFlow = () => {
         return node?.style?.background ?? "#FFFFFF";
     };
 
-    return (
+    return <div style={{ position: "absolute", width: "100%", height: "100%" }}>
         <ReactFlow
             nodes={nodes}
             edges={edgesWithUpdatedTypes}
@@ -74,7 +74,7 @@ const OverviewFlow = () => {
             {/* <Controls /> */}
             <Background color="#aaa" gap={16} />
         </ReactFlow >
-    );
+    </div>;
 };
 
 export default OverviewFlow;

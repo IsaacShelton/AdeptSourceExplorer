@@ -1,37 +1,9 @@
 
 import * as d3 from 'd3';
 import path from 'path';
-import { Suspense, useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { createGlobalState } from 'react-hooks-global-state';
 import sqlite from './sqlite';
-
-// @ts-ignore
-import { forceManyBodyReuse } from "d3-force-reuse";
-
-
-const drag = (simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>) => {
-    function dragStarted(event: any, d: any) {
-        if (!event.active) simulation.alphaTarget(0.7).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-    }
-
-    function dragged(event: any, d: any) {
-        d.fx = event.x;
-        d.fy = event.y;
-    }
-
-    function dragEnded(event: any, d: any) {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-    }
-
-    return d3.drag()
-        .on("start", dragStarted)
-        .on("drag", dragged)
-        .on("end", dragEnded);
-};
 
 const { useGlobalState } = createGlobalState({ mode: '', data: null as object | null });
 
@@ -41,55 +13,153 @@ export function ConnectionGraph() {
     let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
 
-    const modes = ['functions-per-file'];
+    let [hovered, setHovered]: any | null = useState(null);
+
+    const svgRef = useRef(null);
+
+    const modes = ['functions-per-file', 'composites-per-file'];
 
     if (mode == '') {
         setMode(modes[0]);
         setData(null);
     }
 
+    const drag = (simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>) => {
+        function dragStarted(event: any, d: any) {
+            if (!event.active) simulation.alphaTarget(0.7).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event: any, d: any) {
+            d.fx = event.x;
+            d.fy = event.y;
+
+            let items: any[] = d3.select(this).data();
+            let data = items.length > 0 ? items[0].data : null;
+            setHovered(data);
+        }
+
+        function dragEnded(event: any, d: any) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        return d3.drag()
+            .on("start", dragStarted)
+            .on("drag", dragged)
+            .on("end", dragEnded);
+    };
+
+    const getInfoForMode = (mode: string) => {
+        switch (mode) {
+            case 'functions-per-file':
+                return {
+                    title: 'Functions per File',
+                    unit: 'Function',
+                    fetch: async () => {
+                        let rows: any[] = await sqlite.query(`SELECT FunctionName, FunctionSourceObject FROM Function GROUP BY FunctionName, FunctionSourceObject`);
+
+                        let map: Map<string, Set<string>> = new Map();
+
+                        for (let { FunctionName, FunctionSourceObject } of rows) {
+                            if (!map.has(FunctionSourceObject)) {
+                                map.set(FunctionSourceObject, new Set());
+                            }
+
+                            map.get(FunctionSourceObject)?.add(FunctionName);
+                        }
+
+                        let newData: any = { children: [] };
+
+                        for (let [key, funcs] of map) {
+                            newData.children.push({
+                                name: path.basename(key),
+                                filename: key,
+                                children: Array.from(funcs).map((x: string) => { return { functionName: x } }),
+                            });
+                        }
+
+                        // Pre-calculations
+                        newData.radius = 8;
+                        newData.color = '#00000000';
+                        newData.charge = -100;
+                        for (let node of newData.children) {
+                            node.radius = 15;
+                            node.color = '#00000000';
+                            node.charge = -200;
+
+                            for (let child of node.children) {
+                                child.radius = 3.5;
+                                child.color = '#8884d8';
+                                child.charge = -10;
+                            }
+                        }
+
+                        setData(newData);
+                    }
+                };
+            case 'composites-per-file':
+                return {
+                    title: 'Composites per File',
+                    unit: 'Composite',
+                    fetch: async () => {
+                        let rows: any[] = await sqlite.query(`SELECT CompositeName, CompositeSourceObject FROM Composite GROUP BY CompositeName, CompositeSourceObject`);
+
+                        let map: Map<string, Set<string>> = new Map();
+
+                        for (let { CompositeName, CompositeSourceObject } of rows) {
+                            if (!map.has(CompositeSourceObject)) {
+                                map.set(CompositeSourceObject, new Set());
+                            }
+
+                            map.get(CompositeSourceObject)?.add(CompositeName);
+                        }
+
+                        let newData: any = { children: [] };
+
+                        for (let [key, funcs] of map) {
+                            newData.children.push({
+                                name: path.basename(key),
+                                filename: key,
+                                children: Array.from(funcs).map((x: string) => { return { compositeName: x } }),
+                            });
+                        }
+
+                        // Pre-calculations
+                        newData.radius = 8;
+                        newData.color = '#00000000';
+                        newData.charge = -100;
+                        for (let node of newData.children) {
+                            node.radius = 15;
+                            node.color = '#00000000';
+                            node.charge = -200;
+
+                            for (let child of node.children) {
+                                child.radius = 3.5;
+                                child.color = '#8884d8';
+                                child.charge = -10;
+                            }
+                        }
+
+                        setData(newData);
+                    }
+                };
+            default:
+                return {
+                    title: 'None',
+                    unit: '',
+                    fetch: async () => { },
+                };
+        }
+    };
+
+    let { title, fetch, unit } = getInfoForMode(mode);
+
     if (data == null) {
-        let rows = sqlite.query(`SELECT FunctionName, FunctionSourceObject FROM Function GROUP BY FunctionName, FunctionSourceObject`).then((rows: any[]) => {
-            let map: Map<string, Set<string>> = new Map();
-
-            for (let { FunctionName, FunctionSourceObject } of rows) {
-                if (!map.has(FunctionSourceObject)) {
-                    map.set(FunctionSourceObject, new Set());
-                }
-
-                map.get(FunctionSourceObject)?.add(FunctionName);
-            }
-
-            let newData: any = { children: [] };
-
-            for (let [key, funcs] of map) {
-                newData.children.push({
-                    name: path.basename(key),
-                    children: Array.from(funcs).map((x: string) => { return { functionName: x } }),
-                });
-            }
-
-            // Pre-calculations
-            newData.radius = 8;
-            newData.color = '#00000000';
-            newData.charge = -100;
-            for (let node of newData.children) {
-                node.radius = 8;
-                node.color = '#00000000';
-                node.charge = -200;
-
-                for (let child of node.children) {
-                    child.radius = 3.5;
-                    child.color = '#8884d8';
-                    child.charge = -10;
-                }
-            }
-
-            setData(newData);
-        });
+        fetch();
     }
-
-    const svgRef = useRef(null);
 
     useEffect(() => {
         const root = d3.hierarchy(data ?? {});
@@ -133,33 +203,14 @@ export function ConnectionGraph() {
             .attr("fill", (d: any) => d.data.color)
             .attr("stroke", (d: any) => d.data.color)
             .attr("r", (d: any) => d.data.radius)
-            // .on('mouseover', function (d: any) {
-            //     // label.style({ opacity: '1.0', color: 'white' } as any);
-            //     // d.style("opacity", 1);
-            //     // d3.select(this).style("opacity", 1);
-            //     // console.log(d3.select(this));
-
-            //     // -------------------------
-
-            //     // d3.select(d.parentNode).append("text")//appending it to path's parent which is the g(group) DOM
-            //     //     .attr("transform", function () {
-            //     //         return "rotate(" + 0 + ")";
-            //     //     })
-            //     //     .attr("dx", "6") // margin
-            //     //     .attr("dy", ".35em") // vertical-align
-            //     //     .attr("class", "mylabel")//adding a label class
-            //     //     .text(function () {
-            //     //         return d.name;
-            //     //     });
-            // })
-            // .on('mouseout', function (d) {
-            //     // d3.select(this).style("opacity", 0);
-            //     // label.style({ opacity: '0.0' } as any);
-
-            //     // -------------------------
-
-            //     // d3.selectAll(".mylabel").remove();
-            // })
+            .on('mouseover', function (d: any) {
+                let items: any[] = d3.select(this).data();
+                let data = items.length > 0 ? items[0].data : null;
+                setHovered(data);
+            })
+            .on('mouseout', function (d) {
+                setHovered(null);
+            })
             .call(drag(simulation) as any);
 
         simulation.on("tick", () => {
@@ -193,7 +244,7 @@ export function ConnectionGraph() {
         }
     }, [data]);
 
-    return <span>
+    return <>
         <div style={{ position: 'absolute', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 48 }}>
             <div className="custom-select">
                 <select onChange={(event) => {
@@ -201,11 +252,26 @@ export function ConnectionGraph() {
                     setData(null);
                 }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', borderRadius: '50px', userSelect: 'none' }}>
                     {modes.map((mode) => {
-                        return <option value={mode} key={mode}>{mode}</option>
+                        return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
                     })}
                 </select>
             </div>
         </div>
-        <div ref={svgRef} style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0, overflow: "hidden", maxWidth: '100%', maxHeight: '100%' }} />
-    </span>;
+        <div style={{ position: "absolute", width: "100%", height: "100%" }}>
+            <span>
+                <div ref={svgRef} style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0, overflow: "hidden", maxWidth: '100%', maxHeight: '100%' }} />
+                <div style={{ color: 'white', bottom: 0, position: 'fixed', userSelect: 'none', backgroundColor: '#1C1C1C', width: '100%', minHeight: 32, transition: 'opacity 1s' }}>
+                    <span style={{ paddingLeft: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
+                        {hovered?.filename ? path.dirname(hovered.filename) + path.sep : ''}
+                    </span>
+                    <span style={{ fontFamily: 'monospace, sans-serif', color: '#CCCCCC' }}>
+                        {hovered?.filename ? path.basename(hovered.filename) : ''}
+                    </span>
+                    <span style={{ float: 'right', paddingRight: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
+                        {hovered?.children ? '' + hovered.children.length + ' ' + unit + (hovered.children.length > 1 ? 's' : '') : ''}
+                    </span>
+                </div>
+            </span>
+        </div>
+    </>;
 }
