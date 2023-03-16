@@ -5,15 +5,15 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import { createGlobalState } from 'react-hooks-global-state';
 import sqlite from './sqlite';
 
-const { useGlobalState } = createGlobalState({ mode: '', data: null as object | null });
+const { useGlobalState } = createGlobalState({ mode: '', data: null as object | null, hoveredData: {}, hoveredActive: false });
 
 export function ConnectionGraph() {
     const viewWidth = 1200, viewHeight = 800;
 
     let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
-
-    let [hovered, setHovered]: any | null = useState(null);
+    let [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
+    let [hoveredActive, setHoveredActive]: any | null = useGlobalState('hoveredActive');
 
     const svgRef = useRef(null);
 
@@ -31,13 +31,14 @@ export function ConnectionGraph() {
             d.fy = d.y;
         }
 
-        function dragged(event: any, d: any) {
+        function dragged(this: any, event: any, d: any) {
             d.fx = event.x;
             d.fy = event.y;
 
             let items: any[] = d3.select(this).data();
             let data = items.length > 0 ? items[0].data : null;
-            setHovered(data);
+            setHoveredData(data);
+            setHoveredActive(true);
         }
 
         function dragEnded(event: any, d: any) {
@@ -206,10 +207,13 @@ export function ConnectionGraph() {
             .on('mouseover', function (d: any) {
                 let items: any[] = d3.select(this).data();
                 let data = items.length > 0 ? items[0].data : null;
-                setHovered(data);
+                if (data != null && data?.filename) {
+                    setHoveredData(data);
+                    setHoveredActive(true);
+                }
             })
             .on('mouseout', function (d) {
-                setHovered(null);
+                setHoveredActive(false);
             })
             .call(drag(simulation) as any);
 
@@ -260,15 +264,17 @@ export function ConnectionGraph() {
         <div style={{ position: "absolute", width: "100%", height: "100%" }}>
             <span>
                 <div ref={svgRef} style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0, overflow: "hidden", maxWidth: '100%', maxHeight: '100%' }} />
-                <div style={{ color: 'white', bottom: 0, position: 'fixed', userSelect: 'none', backgroundColor: '#1C1C1C', width: '100%', minHeight: 32, transition: 'opacity 1s' }}>
-                    <span style={{ paddingLeft: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
-                        {hovered?.filename ? path.dirname(hovered.filename) + path.sep : ''}
-                    </span>
-                    <span style={{ fontFamily: 'monospace, sans-serif', color: '#CCCCCC' }}>
-                        {hovered?.filename ? path.basename(hovered.filename) : ''}
-                    </span>
-                    <span style={{ float: 'right', paddingRight: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
-                        {hovered?.children ? '' + hovered.children.length + ' ' + unit + (hovered.children.length > 1 ? 's' : '') : ''}
+                <div style={{ color: 'white', bottom: 0, position: 'fixed', userSelect: 'none', backgroundColor: '#1C1C1C', width: '100%', minHeight: 32 }}>
+                    <span style={{ opacity: (hoveredActive as any) ? 1 : 0, transition: 'opacity 1s' }}>
+                        <span style={{ paddingLeft: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
+                            {hoveredData?.filename ? path.dirname(hoveredData.filename) + path.sep : ''}
+                        </span>
+                        <span style={{ fontFamily: 'monospace, sans-serif', color: '#CCCCCC' }}>
+                            {hoveredData?.filename ? path.basename(hoveredData.filename) : ''}
+                        </span>
+                        <span style={{ float: 'right', paddingRight: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
+                            {hoveredData?.children ? '' + hoveredData.children.length + ' ' + unit + (hoveredData.children.length > 1 ? 's' : '') : ''}
+                        </span>
                     </span>
                 </div>
             </span>
