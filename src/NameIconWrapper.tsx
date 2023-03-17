@@ -2,8 +2,8 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import './NameIconWrapper.scss';
 
-export default function NameIconWrapper({ name, icon, count }: any) {
-    let overloadText = (count > 1) ? (<span style={{ fontSize: 8 }}>{count} overloads</span>) : (<></>);
+export default function NameIconWrapper({ name, icon, count, usedOverloads }: any) {
+    let overloadText = (count > 1) ? (<span style={{ fontSize: 8 }}>{usedOverloads ? usedOverloads + '/' : ''}{count} overloads</span>) : (<></>);
     let iconElement = <></>;
 
     let alt, src;
@@ -25,7 +25,7 @@ export default function NameIconWrapper({ name, icon, count }: any) {
             alt={alt}
             height="16px"
             width="16px"
-            style={{ "display": "inline", "marginRight": "4px" }} />;
+            style={{ display: 'inline', marginRight: '4px' }} />;
     }
 
     return (

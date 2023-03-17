@@ -1,7 +1,7 @@
 
 import * as d3 from 'd3';
 import path from 'path';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createGlobalState } from 'react-hooks-global-state';
 import sqlite from './sqlite';
 

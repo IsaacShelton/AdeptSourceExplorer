@@ -1,8 +1,8 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './samples/node-api'
-import './index.scss'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './samples/node-api';
+import './index.scss';
 import sqlite from './sqlite.js';
 
 import { promises } from 'fs';
@@ -11,6 +11,8 @@ const readFile = promises.readFile;
 
 sqlite.run("DROP TABLE IF EXISTS Project");
 sqlite.run("DROP TABLE IF EXISTS Function");
+sqlite.run("DROP TABLE IF EXISTS Composite");
+sqlite.run("DROP TABLE IF EXISTS Call");
 
 async function createProject(rootFilename: string): Promise<number> {
     let filename = rootFilename;
@@ -168,21 +170,7 @@ createProject("/Users/isaac/AdeptProjects/GenericCardGame/main.adept").then(() =
 // createProject("/Users/isaac/AdeptProjects/Box2D/box2d/box2d.adept").then(() => { });
 // createProject("/Users/isaac/AdeptProjects/MiniBox/main.adept").then(() => { });
 
-sqlite.run("DROP TABLE IF EXISTS hello");
-sqlite.run("DROP TABLE IF EXISTS functions");
-sqlite.run("CREATE TABLE IF NOT EXISTS hello (a int, b char)");
-
-sqlite.run("INSERT INTO hello VALUES (?1, ?2)", { "?1": 2, "?2": 'hello' });
-
-sqlite.query("SELECT * FROM hello WHERE a=?1 AND b=?2", { "?1": 1, "?2": 'world' }).then(function (results) {
-    console.log("Got " + JSON.stringify(results));
-});
-
-sqlite.query("SELECT * FROM hello").then(function (results) {
-    console.log("Got " + JSON.stringify(results));
-});
-
-sqlite.tables().then((tables) => console.log(tables));
+// sqlite.tables().then((tables) => console.log(tables));
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
