@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import CallDistribution from './CallDistribution';
 import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
+import Projects from './Projects';
 
 const Tab = styled.button`
   white-space: nowrap;
@@ -40,7 +41,7 @@ const ButtonGroup = styled.div`
   display: flex;
   justify-content: left;
   height: 40px;
-  width: 100vw;
+  width: 100%;
   position: absolute;
   background-color: rgba(50, 50, 50);
 //   background-color: rgba(255,255,255,0.2);
@@ -68,6 +69,8 @@ const types = ['Project', 'Function View', 'Call Distribution', 'Connection Grap
 
 function tabContent(kind: string): JSX.Element {
     switch (kind) {
+        case 'Project':
+            return <Projects />;
         case 'Function View':
             return <OverviewFlow />;
         case 'Call Distribution':
@@ -85,7 +88,7 @@ export default function TabGroup() {
 
     return (
         <div style={{
-            position: "absolute", display: "flex", margin: 0, "padding": 0, width, height
+            position: 'absolute', display: 'flex', margin: 0, padding: 0, width: '100%', height: (active == 'Project' ? 'auto' : '100%')
         }} >
 
             {tabContent(active)}
