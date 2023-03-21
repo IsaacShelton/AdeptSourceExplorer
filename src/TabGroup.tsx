@@ -1,4 +1,5 @@
 import { useLayoutEffect, useState } from 'react';
+import { createGlobalState } from 'react-hooks-global-state';
 import styled from 'styled-components';
 import CallDistribution from './CallDistribution';
 import { ConnectionGraph } from './ConnectionGraph';
@@ -66,17 +67,18 @@ function useWindowSize() {
 }
 
 const types = ['Project', 'Function View', 'Call Distribution', 'Connection Graph'];
+const { useGlobalState: useProjectGlobalState } = createGlobalState({ projectID: -1 });
 
 function tabContent(kind: string): JSX.Element {
     switch (kind) {
         case 'Project':
-            return <Projects />;
+            return <Projects useProjectGlobalState={useProjectGlobalState} />;
         case 'Function View':
-            return <OverviewFlow />;
+            return <OverviewFlow useProjectGlobalState={useProjectGlobalState} />;
         case 'Call Distribution':
-            return <CallDistribution />;
+            return <CallDistribution useProjectGlobalState={useProjectGlobalState} />;
         case 'Connection Graph':
-            return <ConnectionGraph />;
+            return <ConnectionGraph useProjectGlobalState={useProjectGlobalState} />;
         default:
             return <p></p>;
     }
@@ -85,6 +87,9 @@ function tabContent(kind: string): JSX.Element {
 export default function TabGroup() {
     const [active, setActive] = useState(types[0]);
     const [width, height] = useWindowSize();
+    const [projectID, setProjectID] = useProjectGlobalState('projectID');
+
+    let viewableTypes: any[] = projectID < 0 ? types.slice(0, 1) : types;
 
     return (
         <div style={{
@@ -94,7 +99,7 @@ export default function TabGroup() {
             {tabContent(active)}
 
             <ButtonGroup>
-                {types.map(type => (
+                {viewableTypes.map(type => (
                     <Tab
                         key={type}
                         // @ts-ignore

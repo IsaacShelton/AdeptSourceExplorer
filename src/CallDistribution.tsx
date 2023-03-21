@@ -7,7 +7,7 @@ const { useGlobalState } = createGlobalState({ mode: '', data: null as any[] | n
 
 import { CustomTooltipContent } from './CustomTooltip';
 
-export default function CallDistribution() {
+export default function CallDistribution({ useProjectGlobalState }: any) {
     let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
 

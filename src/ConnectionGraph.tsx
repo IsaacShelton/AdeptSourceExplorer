@@ -7,7 +7,7 @@ import sqlite from './sqlite';
 
 const { useGlobalState } = createGlobalState({ mode: '', data: null as object | null, hoveredData: {}, hoveredActive: false });
 
-export function ConnectionGraph() {
+export function ConnectionGraph({ useProjectGlobalState }: any) {
     const viewWidth = 1200, viewHeight = 800;
 
     let [data, setData] = useGlobalState('data');

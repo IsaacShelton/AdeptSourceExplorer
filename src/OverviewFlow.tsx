@@ -76,7 +76,7 @@ const getHeightEstimate = (node: any) => {
     return node.numOverloads > 1 ? 64 : 44;
 };
 
-const OverviewFlow = () => {
+const OverviewFlow = ({ useProjectGlobalState }: any) => {
     // Create nodes
 
     let [name, setName] = useState('main');

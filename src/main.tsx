@@ -18,10 +18,11 @@ async function createProject(rootFilename: string): Promise<number> {
     let filename = rootFilename;
 
     let code = await readFile(filename, 'utf8');
+    let infrastructure = "/Users/isaac/Projects/Adept/build/macOS-Debug/";
 
     let result: any = await invokeInsight({
         "query": "ast",
-        "infrastructure": "/Users/isaac/Projects/Adept/build/macOS-Debug/",
+        "infrastructure": infrastructure,
         "filename": filename,
         "code": code,
         "features": ['include-arg-info', 'include-calls']
@@ -30,7 +31,12 @@ async function createProject(rootFilename: string): Promise<number> {
     await sqlite.run(`
             CREATE TABLE IF NOT EXISTS Project (
                 ProjectID Integer PRIMARY KEY AUTOINCREMENT,
-                ProjectName VARCHAR(1024)
+                ProjectName VARCHAR(1024),
+                ProjectInfrastructure VARCHAR(2048),
+                ProjectRootFilename VARCHAR(2048),
+                ProjectCreated INTEGER,
+                ProjectLastOpened INTEGER,
+                ProjectUpdated INTEGER
             )
         `);
 
@@ -41,7 +47,7 @@ async function createProject(rootFilename: string): Promise<number> {
                 FunctionDefinition VARCHAR(4096),
                 FunctionSourceObject VARCHAR(4096),
                 FunctionSourceIndex INT,
-                FunctionSourceStride Int,
+                FunctionSourceStride INT,
                 FunctionEndIndex INT,
                 FunctionEndStride INT,
                 ProjectID INT,
@@ -80,10 +86,21 @@ async function createProject(rootFilename: string): Promise<number> {
             )
         `);
 
+    function now() {
+        return new Date().getTime() / 1000;
+    }
+
+    let time = now();
+
     let projectID = await sqlite.insert(`
-            INSERT INTO Project VALUES (NULL, :ProjectName)
+            INSERT INTO Project VALUES (NULL, :ProjectName, :ProjectInfrastructure, :ProjectRootFilename, :ProjectCreated, :ProjectLastOpened, :ProjectLastUpdated)
         `, {
-        ":ProjectName": filename
+        ":ProjectName": filename,
+        ":ProjectInfrastructure": filename,
+        ":ProjectRootFilename": filename,
+        ":ProjectCreated": time,
+        ":ProjectLastOpened": 0,
+        ":ProjectLastUpdated": time,
     });
 
     let funcs: any[] = result?.ast?.functions;
