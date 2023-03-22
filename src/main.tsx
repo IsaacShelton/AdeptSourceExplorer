@@ -93,7 +93,15 @@ async function createProject(rootFilename: string): Promise<number> {
     let time = now();
 
     let projectID = await sqlite.insert(`
-            INSERT INTO Project VALUES (NULL, :ProjectName, :ProjectInfrastructure, :ProjectRootFilename, :ProjectCreated, :ProjectLastOpened, :ProjectLastUpdated)
+            INSERT INTO Project VALUES (
+                NULL,
+                :ProjectName,
+                :ProjectInfrastructure,
+                :ProjectRootFilename,
+                :ProjectCreated,
+                :ProjectLastOpened,
+                :ProjectLastUpdated
+            )
         `, {
         ":ProjectName": filename,
         ":ProjectInfrastructure": filename,

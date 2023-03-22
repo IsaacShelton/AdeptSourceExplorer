@@ -1,12 +1,19 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { createGlobalState } from 'react-hooks-global-state';
 import './Projects.scss';
 import { useDelayedState } from './useDelayedState';
 import { Wave } from './Wave';
 
 export default function Projects({ useProjectGlobalState }: any) {
-    let [projectID, setProjectID] = useProjectGlobalState('projectID');
+    let [creating, setCreating] = useState(false);
+
+    let createNewProject = useCallback(() => {
+        setCreating(true);
+    }, []);
+
+    let cancelCreateNewProject = useCallback(() => {
+        setCreating(false);
+    }, []);
 
     return <div style={{
         display: 'flex',
@@ -16,16 +23,32 @@ export default function Projects({ useProjectGlobalState }: any) {
         width: '100%',
         justifyContent: 'center',
     }}>
-        <NewProject name="Project1" created={1235234} lastOpened={1231432} projectID={-1000} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={1} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={2} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={3} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={4} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={5} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={6} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={7} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={8} />
-        <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={9} />
+        {creating ?
+            <div>
+                <button onClick={cancelCreateNewProject}>Cancel</button>
+                <br />
+                Name:
+                <input type="text" />
+                <br />
+                <input type="text" />
+                <button>Open File</button>
+                <br />
+                <button>Create Project</button>
+            </div>
+            :
+            <>
+                <NewProject name="Project1" created={1235234} lastOpened={1231432} projectID={-1000} onClick={createNewProject} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={1} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={2} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={3} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={4} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={5} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={6} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={7} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={8} />
+                <Project useProjectGlobalState={useProjectGlobalState} name="Project1" created={1235234} lastOpened={1231432} projectID={9} />
+            </>
+        }
     </div >;
 }
 
@@ -194,7 +217,7 @@ function Project({ name, created, lastOpened, projectID, useProjectGlobalState }
     // </div>;
 }
 
-function NewProject({ name, created, lastOpened, projectID }: any) {
+function NewProject({ name, created, lastOpened, projectID, onClick }: any) {
     let backgrounds = [
         { name: 'wave1', text: 'white' },
         { name: 'wave2', text: 'white' },
@@ -205,7 +228,7 @@ function NewProject({ name, created, lastOpened, projectID }: any) {
 
     let bg = choose(backgrounds);
 
-    return <div style={{ cursor: 'pointer', display: 'flex', height: 296, alignItems: 'center', justifyContent: 'center', margin: 16, borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: '#1C1C1C', color: bg.text }}>
+    return <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', height: 296, alignItems: 'center', justifyContent: 'center', margin: 16, borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: '#1C1C1C', color: bg.text }}>
         <p style={{ alignContent: 'center', justifyContent: 'center', fontSize: 60, color: '#333333' }}>+</p>
     </div>;
 }

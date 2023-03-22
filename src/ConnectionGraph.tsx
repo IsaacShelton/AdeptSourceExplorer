@@ -14,6 +14,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
     let [mode, setMode] = useGlobalState('mode');
     let [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
     let [hoveredActive, setHoveredActive]: any | null = useGlobalState('hoveredActive');
+    let [projectID] = useProjectGlobalState('projectID');
 
     const svgRef = useRef(null);
 
@@ -60,7 +61,14 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                     title: 'Functions per File',
                     unit: 'Function',
                     fetch: async () => {
-                        let rows: any[] = await sqlite.query(`SELECT FunctionName, FunctionSourceObject FROM Function GROUP BY FunctionName, FunctionSourceObject`);
+                        let rows: any[] = await sqlite.query(`
+                            SELECT FunctionName, FunctionSourceObject
+                                FROM Function
+                                WHERE Function.ProjectID = :ProjectID
+                                GROUP BY FunctionName, FunctionSourceObject
+                        `, {
+                            ':ProjectID': projectID
+                        });
 
                         let map: Map<string, Set<string>> = new Map();
 
@@ -106,7 +114,14 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                     title: 'Composites per File',
                     unit: 'Composite',
                     fetch: async () => {
-                        let rows: any[] = await sqlite.query(`SELECT CompositeName, CompositeSourceObject FROM Composite GROUP BY CompositeName, CompositeSourceObject`);
+                        let rows: any[] = await sqlite.query(`
+                            SELECT CompositeName, CompositeSourceObject
+                                FROM Composite
+                                WHERE Composite.ProjectID = :ProjectID
+                                GROUP BY CompositeName, CompositeSourceObject
+                        `, {
+                            ':ProjectID': projectID
+                        });
 
                         let map: Map<string, Set<string>> = new Map();
 
@@ -161,6 +176,10 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
     if (data == null) {
         fetch();
     }
+
+    useEffect(() => {
+        fetch();
+    }, [projectID])
 
     useEffect(() => {
         const root = d3.hierarchy(data ?? {});

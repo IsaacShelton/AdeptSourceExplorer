@@ -58,3 +58,8 @@ label {
     font-size: 1.125rem;
     font-weight: 500;
 }
+
+.downsampled-message {
+    position: absolute;
+    pointer-events: none;
+}

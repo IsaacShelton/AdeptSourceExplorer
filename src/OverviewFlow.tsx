@@ -79,11 +79,16 @@ const getHeightEstimate = (node: any) => {
 const OverviewFlow = ({ useProjectGlobalState }: any) => {
     // Create nodes
 
+    let [projectID] = useProjectGlobalState('projectID');
     let [name, setName] = useState('main');
 
     useEffect(() => {
         (async () => {
-            let numOverloadsTable: any[] = await sqlite.query(`SELECT FunctionName, count(*) AS NumOverloads FROM Function GROUP BY FunctionName`);
+            let numOverloadsTable: any[] = await sqlite.query(`
+                SELECT FunctionName, count(*) AS NumOverloads FROM Function WHERE ProjectID = :ProjectID GROUP BY FunctionName
+            `, {
+                ':ProjectID': projectID,
+            });
             let overloads: Map<string, number> = new Map();
 
             for (let row of numOverloadsTable) {
@@ -92,19 +97,31 @@ const OverviewFlow = ({ useProjectGlobalState }: any) => {
 
             let callersTable: any[] = await sqlite.query(
                 `
-                SELECT FunctionName, sum(CallAmount) as NumCalls, count(*) as NumCallingOverloads FROM
-                    Function JOIN (SELECT CallCallerFunctionID, CallAmount FROM Call WHERE CallCallee = :MainFunctionName) AS Callers
+                SELECT FunctionName, sum(CallAmount) as NumCalls, count(*) as NumCallingOverloads
+                    FROM Function JOIN (
+                        SELECT CallCallerFunctionID, CallAmount
+                            FROM Call
+                            WHERE CallCallee = :MainFunctionName
+                    ) AS Callers
                     ON CallCallerFunctionID = FunctionID
+                    WHERE Function.ProjectID = :ProjectID
                     GROUP BY FunctionName
                 `, {
                 ':MainFunctionName': name,
+                ':ProjectID': projectID,
             });
 
             let calleesTable: any[] = await sqlite.query(
                 `SELECT DISTINCT CallCallee AS FunctionName
-                    FROM Call JOIN (SELECT FunctionID AS MainFunctionID FROM Function WHERE FunctionName = :MainFunctionName) AS MainFunctions
-                    ON Call.CallCallerFunctionID = MainFunctionID`, {
+                    FROM Call JOIN (
+                        SELECT FunctionID AS MainFunctionID
+                            FROM Function
+                            WHERE FunctionName = :MainFunctionName AND Function.ProjectID = :ProjectID
+                    ) AS MainFunctions
+                    ON Call.CallCallerFunctionID = MainFunctionID
+                `, {
                 ':MainFunctionName': name,
+                ':ProjectID': projectID,
             });
 
             let main: any[] = [

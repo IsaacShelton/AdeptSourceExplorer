@@ -3,13 +3,17 @@ import sqlite from './sqlite';
 import { createGlobalState } from 'react-hooks-global-state';
 import './CallDistribution.scss';
 
-const { useGlobalState } = createGlobalState({ mode: '', data: null as any[] | null });
+const { useGlobalState } = createGlobalState({ mode: '', data: null as any[] | null, isDownsampled: false });
 
 import { CustomTooltipContent } from './CustomTooltip';
+import { useEffect, useState } from 'react';
+import { downsample } from './downsample';
 
 export default function CallDistribution({ useProjectGlobalState }: any) {
     let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
+    let [projectID] = useProjectGlobalState('projectID');
+    let [isDownsampled, setIsDownsampled] = useGlobalState('isDownsampled');
 
     const modes = ['callee-vs-frequency', 'function-name-vs-frequency'];
 
@@ -27,14 +31,27 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
                     title: 'Function Call Frequency',
                     layout: 'vertical-barchart',
                     fetch: async () => {
-                        let rows = await sqlite.query(`SELECT CallCallee, sum(CallAmount) as NumTimes FROM Call GROUP BY CallCallee ORDER BY NumTimes DESC, CallCallee ASC`);
+                        let rows = await sqlite.query(`
+                            SELECT CallCallee, sum(CallAmount) as NumTimes
+                                FROM Call JOIN Function
+                                ON CallCallerFunctionID = FunctionID
+                                WHERE Function.ProjectID = :ProjectID
+                                GROUP BY CallCallee ORDER BY NumTimes DESC, CallCallee ASC
+                        `, {
+                            ':ProjectID': projectID,
+                        });
 
-                        setData(rows.map((row: any) => {
+                        let rawData = rows.map((row: any) => {
                             return {
                                 name: row['CallCallee'],
                                 count: row['NumTimes']
                             };
-                        }))
+                        });
+
+                        let downsampledData = downsample(rawData, 100);
+
+                        setData(downsampledData);
+                        setIsDownsampled(downsampledData.length != rawData.length);
                     }
                 };
             case 'function-name-vs-frequency': {
@@ -47,15 +64,31 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
                     labelFormatter: (value: any) => `Having ${value} Overload${value > 1 ? 's' : ''}`,
                     fetch: async () => {
                         let rows = await sqlite.query(`
-                                SELECT Count, count(*) as Frequency FROM (
-                                    SELECT FunctionName, count(*) as Count FROM Function GROUP BY FunctionName ORDER BY Count DESC, FunctionName ASC
-                                ) as SubTable GROUP BY Count
-                            `);
+                                SELECT Count, count(*) as Frequency
+                                    FROM (
+                                        SELECT FunctionName, count(*) as Count
+                                            FROM Function
+                                            WHERE Function.ProjectID = :ProjectID
+                                            GROUP BY FunctionName ORDER BY Count DESC, FunctionName ASC
+                                    ) as SubTable
+                                    GROUP BY Count
+                            `, {
+                            ':ProjectID': projectID,
+                        });
 
                         let results: any[] = await Promise.all(rows.map((row: any) => parseInt(row['Count'])).map(
-                            (count: any) => sqlite.query(`SELECT FunctionName, count(*) as Count FROM Function GROUP BY FunctionName HAVING Count = :Count ORDER BY FunctionName ASC LIMIT :Limit`, {
-                                ":Count": count,
-                                ":Limit": 4,
+                            (count: any) => sqlite.query(`
+                                SELECT FunctionName, count(*) as Count
+                                    FROM Function
+                                    WHERE Function.ProjectID = :ProjectID
+                                    GROUP BY FunctionName
+                                    HAVING Count = :Count
+                                    ORDER BY FunctionName ASC
+                                    LIMIT :Limit
+                            `, {
+                                ':Count': count,
+                                ':Limit': 4,
+                                ':ProjectID': projectID,
                             })
                         ));
 
@@ -67,13 +100,19 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
                             map.set(array[0].Count, array.map((item: any) => item.FunctionName));
                         }
 
-                        setData(rows.map((row: any) => {
+                        let rawData = rows.map((row: any) => {
                             return {
                                 name: row['Count'],
                                 count: row['Frequency'],
                                 topNames: map.get(parseInt(row['Count'])),
                             };
-                        }));
+                        });
+
+
+                        let downsampledData = downsample(rawData, 100);
+
+                        setData(downsampledData);
+                        setIsDownsampled(rawData.length != downsampledData.length);
                     }
                 };
             }
@@ -117,6 +156,10 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
         fetch();
     }
 
+    useEffect(() => {
+        fetch();
+    }, [projectID]);
+
     return (
         <div style={{ position: "absolute", width: "100%", height: "100%" }}>
             <div style={{ marginTop: "48px", width: "100%" }}>
@@ -133,43 +176,26 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
                     </div>
                 </div>
                 <div style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0 }}>
-                    <div style={{ position: "relative", left: "-32px" }}>
-                        <ResponsiveContainer width={800} height={600}>
-                            {getChart(layout)}
-
-                            {/* <BarChart width={600} height={600} data={data as object[]}>
-                            <text x={600 / 2} y={20} fill="white" style={{ "fontFamily": "monospace, sans-serif", marginBottom: "64px" }} textAnchor="middle" dominantBaseline="central">
-                                <tspan fontSize="28">{title}</tspan>
-                            </text>
-                            <XAxis dataKey="name" label={{ value: xLabel, position: "insideBottom", dy: 24 }} angle={-90} textAnchor="end" height={128} interval={data ? Math.floor(0.1 * data.length) : 0} />
-                            <YAxis label={{ value: yLabel, position: "insideLeft", angle: -90, dx: 10 }} />
-                            <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} />
-                            <Bar dataKey="count" fill="#8884d8" />
-                        </BarChart> */}
-
-                            {/* <AreaChart
-                        width={600}
-                        height={600}
-                        data={data ?? []}
-                        margin={{
-                            top: 48,
-                            right: 48,
-                            left: 0,
-                            bottom: 48,
-                        }}
-                        >
-                            <text x={600 / 2} y={20} fill="white" style={{ "fontFamily": "monospace, sans-serif", marginBottom: "64px" }} textAnchor="middle" dominantBaseline="central">
-                                <tspan fontSize="28">{title}</tspan>
-                            </text>
-                            <XAxis dataKey="name" label={{ value: xLabel, position: "insideBottom", dy: 24 }} />
-                            <YAxis domain={['auto', 'auto']} label={{ value: yLabel, position: "insideLeft", angle: -90, dx: 10 }} />
-                            <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} />
-                            <Area type="monotone" dataKey="count" stroke="#8884d8" fill="#8884d8" />
-                        </AreaChart> */}
-                        </ResponsiveContainer>
-                    </div>
+                    {
+                        isDownsampled && (
+                            <div className='downsampled-message'>
+                                <div style={{ position: 'relative', top: 10 }}>
+                                    <p style={{ color: '#666666' }}>Data was downsampled</p>
+                                </div>
+                            </div>
+                        )
+                    }
+                    {
+                        data != null && data.length > 0 && (
+                            <div style={{ position: "relative", left: "-32px" }}>
+                                <ResponsiveContainer width={800} height={600}>
+                                    {getChart(layout)}
+                                </ResponsiveContainer>
+                            </div>
+                        )
+                    }
                 </div>
             </div >
-        </div>
+        </div >
     );
 }
