@@ -47,9 +47,6 @@ select {
     cursor: pointer;
     line-height: 1.1;
 
-    // background-color: #fff;
-    // background-image: linear-gradient(to top, #f9f9f9, #fff 33%);
-    // background-color: #242424;
     background-image: linear-gradient(to top, #202020, #242424 33%);
     color: white;
 }
@@ -62,4 +59,5 @@ label {
 .downsampled-message {
     position: absolute;
     pointer-events: none;
+    margin-top: 24px;
 }

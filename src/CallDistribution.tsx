@@ -6,7 +6,7 @@ import './CallDistribution.scss';
 const { useGlobalState } = createGlobalState({ mode: '', data: null as any[] | null, isDownsampled: false });
 
 import { CustomTooltipContent } from './CustomTooltip';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { downsample } from './downsample';
 
 export default function CallDistribution({ useProjectGlobalState }: any) {
@@ -108,7 +108,6 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
                             };
                         });
 
-
                         let downsampledData = downsample(rawData, 100);
 
                         setData(downsampledData);
@@ -134,17 +133,17 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
             case 'none':
                 return <div></div>
             case 'vertical-barchart':
-                return <BarChart width={800} height={600} data={data as object[]} layout="vertical">
-                    <XAxis type="number" label={{ value: yLabel, position: "insideBottom", dy: 0 }} height={48} /> {/* scale="log" domain={[0.9, 'auto']} */}
+                return <BarChart width={800} height={600} data={data as any[]} layout="vertical">
+                    <XAxis type="number" label={{ value: yLabel, position: "insideBottom", dy: 0 }} height={48} />
                     <YAxis dataKey="name" type="category" interval={data ? Math.floor(0.1 * data.length) : 0} label={{ value: xLabel, position: "insideLeft", dy: 0, angle: -90 }} width={128} />
-                    <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} content={customTooltip as any} labelFormatter={labelFormatter} />
+                    <Tooltip labelClassName='text-black font-mono' content={customTooltip as any} labelFormatter={labelFormatter} />
                     <Bar dataKey="count" fill="#8884d8" />
                 </BarChart>
             case 'horizontal-barchart':
-                return <BarChart width={800} height={600} data={data as object[]}>
-                    <XAxis dataKey="name" label={{ value: xLabel, position: "insideBottom", dy: 0 }} height={54} interval={data ? Math.floor(0.1 * data.length) : 0} /> {/*angle={-90} textAnchor="end" height={128} */}
+                return <BarChart width={800} height={600} data={data as any[]}>
+                    <XAxis dataKey="name" label={{ value: xLabel, position: "insideBottom", dy: 0 }} height={54} interval={data ? Math.floor(0.1 * data.length) : 0} />
                     <YAxis label={{ value: yLabel, position: "insideLeft", angle: -90, dx: -2 }} />
-                    <Tooltip labelStyle={{ color: "black", fontFamily: "monospace, sans-serif" }} content={customTooltip as any} labelFormatter={labelFormatter} />
+                    <Tooltip labelClassName='text-black font-mono' content={customTooltip as any} labelFormatter={labelFormatter} />
                     <Bar dataKey="count" fill="#8884d8" />
                 </BarChart>
             default:
@@ -160,42 +159,40 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
         fetch();
     }, [projectID]);
 
-    return (
-        <div style={{ position: "absolute", width: "100%", height: "100%" }}>
-            <div style={{ marginTop: "48px", width: "100%" }}>
-                <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center' }}>
-                    <div className="custom-select">
-                        <select onChange={(event) => {
-                            setMode(event.target.value);
-                            setData(null);
-                        }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', userSelect: 'none' }}>
-                            {modes.map((mode) => {
-                                return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
-                            })}
-                        </select>
-                    </div>
+    return <div className='absolute w-full h-full'>
+        <div className='mt-[48px] w-full'>
+            <div className='flex justify-center align-center mb-6 mt-16'>
+                <div className="custom-select">
+                    <select onChange={(event) => {
+                        setMode(event.target.value);
+                        setData(null);
+                    }} value={mode} className='text-[20px] font-mono select-none'>
+                        {modes.map((mode) => {
+                            return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
+                        })}
+                    </select>
                 </div>
-                <div style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0 }}>
-                    {
-                        isDownsampled && (
-                            <div className='downsampled-message'>
-                                <div style={{ position: 'relative', top: 10 }}>
-                                    <p style={{ color: '#666666' }}>Data was downsampled</p>
-                                </div>
+            </div>
+            <div className='flex justify-center m-0 p-0'>
+                {
+                    isDownsampled && (
+                        <div className='downsampled-message'>
+                            <div className='relative top-[10px]'>
+                                <p className='text-[#333333]'>Data was downsampled</p>
                             </div>
-                        )
-                    }
-                    {
-                        data != null && data.length > 0 && (
-                            <div style={{ position: "relative", left: "-32px" }}>
-                                <ResponsiveContainer width={800} height={600}>
-                                    {getChart(layout)}
-                                </ResponsiveContainer>
-                            </div>
-                        )
-                    }
-                </div>
-            </div >
-        </div >
-    );
+                        </div>
+                    )
+                }
+                {
+                    data != null && data.length > 0 && (
+                        <div className='relative left-[-32px]'>
+                            <ResponsiveContainer width={800} height={600}>
+                                {getChart(layout)}
+                            </ResponsiveContainer>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+    </div >;
 }

@@ -13,7 +13,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
     let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
     let [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
-    let [hoveredActive, setHoveredActive]: any | null = useGlobalState('hoveredActive');
+    let [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
     let [projectID] = useProjectGlobalState('projectID');
 
     const svgRef = useRef(null);
@@ -150,7 +150,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                         for (let node of newData.children) {
                             node.radius = 15;
                             node.color = '#00000000';
-                            node.charge = -200;
+                            node.charge = -100;
 
                             for (let child of node.children) {
                                 child.radius = 3.5;
@@ -211,7 +211,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
             .attr("fill", '#FFFFFF')
             .attr("text-anchor", "middle")
             .style("font-size", 10)
-            .style("font-family", "monospace, sans-serif")
+            .classed("font-mono", true);
 
         const node = svg.append("g")
             .attr("fill", "#fff")
@@ -268,31 +268,31 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
     }, [data]);
 
     return <>
-        <div style={{ position: 'absolute', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: 48 }}>
+        <div className='absolute w-full flex justify-center align-center mt-16'>
             <div className="custom-select">
                 <select onChange={(event) => {
                     setMode(event.target.value);
                     setData(null);
-                }} value={mode} style={{ fontSize: 20, fontFamily: 'monospace, sans-serif', borderRadius: '50px', userSelect: 'none' }}>
+                }} value={mode} className='text-[20px] font-mono rounded-[50px] select-none p-2 pr-4'>
                     {modes.map((mode) => {
                         return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
                     })}
                 </select>
             </div>
         </div>
-        <div style={{ position: "absolute", width: "100%", height: "100%" }}>
+        <div className='absolute w-full h-full'>
             <span>
-                <div ref={svgRef} style={{ display: "flex", justifyContent: "center", margin: 0, padding: 0, overflow: "hidden", maxWidth: '100%', maxHeight: '100%' }} />
-                <div style={{ color: 'white', bottom: 0, position: 'fixed', userSelect: 'none', backgroundColor: '#1C1C1C', width: '100%', minHeight: 32 }}>
-                    <span style={{ opacity: (hoveredActive as any) ? 1 : 0, transition: 'opacity 1s' }}>
-                        <span style={{ paddingLeft: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
-                            {hoveredData?.filename ? path.dirname(hoveredData.filename) + path.sep : ''}
+                <div ref={svgRef} className='flex justify-center m-0 p-0 overflow-hidden max-w-full max-h-full' />
+                <div className='text-white bottom-0 fixed select-none bg-[#1C1C1C] w-full min-h-8'>
+                    <span className='transition-opacity duration 500' style={{ opacity: hoveredActive ? 1 : 0 }} >
+                        <span className='font-mono text-[#888888] pl-[10px]'>
+                            {hoveredData?.filename && (path.dirname(hoveredData.filename) + path.sep)}
                         </span>
-                        <span style={{ fontFamily: 'monospace, sans-serif', color: '#CCCCCC' }}>
-                            {hoveredData?.filename ? path.basename(hoveredData.filename) : ''}
+                        <span className='font-mono text-[#CCCCCC]'>
+                            {hoveredData?.filename && path.basename(hoveredData.filename)}
                         </span>
-                        <span style={{ float: 'right', paddingRight: 10, fontFamily: 'monospace, sans-serif', color: '#888888' }}>
-                            {hoveredData?.children ? '' + hoveredData.children.length + ' ' + unit + (hoveredData.children.length > 1 ? 's' : '') : ''}
+                        <span className='font-mono text-[#888888] pr-[10px] float-right'>
+                            {hoveredData?.children && (hoveredData.children.length.toString() + ' ' + unit + (hoveredData.children.length > 1 ? 's' : ''))}
                         </span>
                     </span>
                 </div>

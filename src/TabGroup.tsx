@@ -1,75 +1,33 @@
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 import { createGlobalState } from 'react-hooks-global-state';
-import styled from 'styled-components';
 import CallDistribution from './CallDistribution';
 import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 import Projects from './Projects';
 
-const Tab = styled.button`
-  white-space: nowrap;
-  user-select: none;
-  font-size: 20px;
-  padding: 10px 60px;
-  margin-left: 4px;
-  margin-right: 4px;
-  border-style: none;
-  cursor: pointer;
-  opacity: 1.0;
-  background: transparent;
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  text-transform: lowercase;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-  color: white;
-  padding-top: 6px;
-  outline: 0;
-  -webkit-transition: background-color 100ms ease-in;
-  -ms-transition: background-color 100ms ease-in;
-  transition: background-color 100ms ease-in;
-  border-radius: 20px;
-  ${({ active }: any) =>
-        active &&
-        `
-  background-color: rgba(255,255,255,0.1);
-  border-radius: 20px;
-  `}
-`;
-const ButtonGroup = styled.div`
-  display: flex;
-  justify-content: left;
-  height: 40px;
-  width: 100%;
-  position: absolute;
-  background-color: rgba(50, 50, 50);
-//   background-color: rgba(255,255,255,0.2);
-//   backdrop-filter: blur(2px);
-`;
+const Tab = (props: { active: boolean, children: any[], onClick: () => any }) => {
+    let style = props.active ? { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '20px' } : undefined;
 
-function useWindowSize() {
-    const [size, setSize] = useState([0, 0]);
+    return <button
+        onClick={props.onClick}
+        style={style}
+        className='whitespace-nowrap select-none text-[20px] py-[10px] px-[60px] mx-1 border-none
+        cursor-pointer bg-transparent font-sans lowercase text-white pt-[4px]
+        transition-background-color duration-100 ease-in rounded-[20px]'>
+        {...props.children}
+    </button>
+};
 
-    useLayoutEffect(() => {
-        function updateSize() {
-            setSize([window.innerWidth, window.innerHeight]);
-        }
+const ButtonGroup = (props: { children: any[] }) => {
+    return <div className='flex justify-left h-10 w-full absolute bg-[#303030]'>
+        {...props.children}
+    </div>
+};
 
-        window.addEventListener('resize', updateSize);
-        updateSize();
-
-        return () => window.removeEventListener('resize', updateSize);
-    }, []);
-
-    return size;
-}
-
-const types = ['Project', 'Function View', 'Call Distribution', 'Connection Graph'];
+const tabNames = ['Project', 'Function View', 'Call Distribution', 'Connection Graph'];
 const { useGlobalState: useProjectGlobalState } = createGlobalState({ projectID: -1 });
 
-function tabContent(kind: string): JSX.Element {
+const TabContent = (kind: string) => {
     switch (kind) {
         case 'Project':
             return <Projects useProjectGlobalState={useProjectGlobalState} />;
@@ -80,26 +38,25 @@ function tabContent(kind: string): JSX.Element {
         case 'Connection Graph':
             return <ConnectionGraph useProjectGlobalState={useProjectGlobalState} />;
         default:
-            return <p></p>;
+            return <></>;
     }
 }
 
 export default function TabGroup() {
-    const [active, setActive] = useState(types[0]);
-    const [width, height] = useWindowSize();
-    const [projectID, setProjectID] = useProjectGlobalState('projectID');
+    const [active, setActive] = useState(tabNames[0]);
+    const [projectID] = useProjectGlobalState('projectID');
 
-    let viewableTypes: any[] = projectID < 0 ? types.slice(0, 1) : types;
+    let viewableTabNames: any[] = projectID < 0 ? tabNames.slice(0, 1) : tabNames;
 
     return (
-        <div style={{
-            position: 'absolute', display: 'flex', margin: 0, padding: 0, width: '100%', height: (active == 'Project' ? 'auto' : '100%')
+        <div className='absolute flex m-0 p-0 w-full' style={{
+            height: (active == 'Project' ? 'auto' : '100%')
         }} >
 
-            {tabContent(active)}
+            {TabContent(active)}
 
             <ButtonGroup>
-                {viewableTypes.map(type => (
+                {viewableTabNames.map(type => (
                     <Tab
                         key={type}
                         // @ts-ignore

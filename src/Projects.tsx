@@ -4,6 +4,22 @@ import './Projects.scss';
 import { useDelayedState } from './useDelayedState';
 import { Wave } from './Wave';
 
+function CreateProjectDialog(props: { cancelCreateNewProject: () => void }) {
+    return <div className='w-full flex justify-center mt-20'>
+        <div>
+            <button className='outline-none bg-black' onClick={props.cancelCreateNewProject}>Cancel</button>
+            <br />
+            Name:
+            <input type="text" />
+            <br />
+            <input type="text" />
+            <button>Open File</button>
+            <br />
+            <button>Create Project</button>
+        </div>
+    </div>;
+}
+
 export default function Projects({ useProjectGlobalState }: any) {
     let [creating, setCreating] = useState(false);
 
@@ -15,26 +31,9 @@ export default function Projects({ useProjectGlobalState }: any) {
         setCreating(false);
     }, []);
 
-    return <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        marginTop: 48,
-        marginBottom: 48,
-        width: '100%',
-        justifyContent: 'center',
-    }}>
+    return <div className='flex flex-wrap mt-12 mb-12 w-full justify-center'>
         {creating ?
-            <div>
-                <button onClick={cancelCreateNewProject}>Cancel</button>
-                <br />
-                Name:
-                <input type="text" />
-                <br />
-                <input type="text" />
-                <button>Open File</button>
-                <br />
-                <button>Create Project</button>
-            </div>
+            <CreateProjectDialog cancelCreateNewProject={cancelCreateNewProject} />
             :
             <>
                 <NewProject name="Project1" created={1235234} lastOpened={1231432} projectID={-1000} onClick={createNewProject} />
@@ -64,49 +63,46 @@ function Project({ name, created, lastOpened, projectID, useProjectGlobalState }
 
     let active = activeProjectID == projectID;
 
-    let backgrounds = [
+    const backgrounds = [
         { color: 'blue', text: 'white' },
         { color: 'green', text: 'white' },
         { color: 'purple', text: 'white' },
         { color: 'red', text: 'white' },
         { color: 'yellow', text: '#444444' },
-    ]
+    ];
 
-    let bg = backgrounds[projectID % backgrounds.length]; //choose(backgrounds);
+    let bg = backgrounds[projectID % backgrounds.length];
 
     let playStop = useCallback(() => {
-        if (activeProjectID == projectID) {
-            setActiveProjectID(-1);
-        } else {
-            setActiveProjectID(projectID);
-        }
+        setActiveProjectID(active ? -1 : projectID);
     }, [activeProjectID]);
 
     useEffect(() => {
-        if (activeProjectID == projectID) {
+        if (active) {
             setShowAnimation(true, 0);
         } else {
             setShowAnimation(false, 300);
         }
-    }, [activeProjectID, projectID]);
+    }, [active]);
 
     let borderRectRef: any = useRef(null);
 
     useLayoutEffect(() => {
         let len = borderRectRef.current.getTotalLength();
-        setLength(len);
         let dasharray = len / 8;
+
+        setLength(len);
         borderRectRef.current.setAttribute('stroke-dasharray', dasharray);
     }, []);
 
-    return <div style={{ position: 'relative', margin: 12, width: 512, height: 256, marginBottom: 64 }}>
-        <div style={{ position: 'absolute', padding: 16, marginTop: 32, marginLeft: 40, width: '100%', height: '100%', color: bg.text }}>
-            <p>Name: {name}</p>
-            <p>Created: {created}</p>
-            <p>Last Opened: {lastOpened}</p>
-            <p>GenericCardGame/main.adept</p>
+    return <div className='relative m-3 w-128 h-64 mb-16'>
+        <div className='absolute p-4 mt-8 mb-8 ml-10 w-full h-full' style={{ color: bg.text }}>
+            <p className='py-2'>Name: {name}</p>
+            <p className='py-2'>Created: {created}</p>
+            <p className='py-2'>Last Opened: {lastOpened}</p>
+            <p className='py-2'>GenericCardGame/main.adept</p>
         </div>
-        <div style={{ position: 'absolute', right: -24, bottom: -8, display: 'flex', paddingRight: 72, alignItems: 'center', justifyContent: 'right' }}>
+        <div className='absolute flex right-[-24px] bottom-0 align-center justify-right pr-[72px]'>
             {
                 (bg.text == 'white') &&
                 <>
@@ -138,97 +134,10 @@ function Project({ name, created, lastOpened, projectID, useProjectGlobalState }
             </g>
         </svg>
     </div>
-    //-----------
-
-    // return <div style={{ margin: 16, padding: 40, justifyContent: 'center', borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: 'transparent', color: bg.text }}>
-    //     <p>Name: {name}</p>
-    //     <p>Created: {created}</p>
-    //     <p>Last Opened: {lastOpened}</p>
-    //     <p>GenericCardGame/main.adept</p>
-    //     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'right' }}>
-    //         {
-    //             (bg.text == 'white') &&
-    //             <>
-    //                 <img src={active ? "stop-white.svg" : "play-white.svg"} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-    //                 <img src="settings-white.svg" width={32} height={32} />
-    //             </>
-    //         }
-    //         {
-    //             (bg.text != 'white') &&
-    //             <>
-    //                 <img src={active ? "stop-black.svg" : "play-black.svg"} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-    //                 <img src="settings-black.svg" width={32} height={32} />
-    //             </>
-    //         }
-    //     </div>
-    // </div>
-
-    /*
-    return <div className={active ? 'animated-border animated-border-active' : 'animated-border'} style={{ margin: 16 }}>
-        <div style={{ padding: 40, justifyContent: 'center', borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: 'transparent', color: bg.text }}>
-            <p>Name: {name}</p>
-            <p>Created: {created}</p>
-            <p>Last Opened: {lastOpened}</p>
-            <p>GenericCardGame/main.adept</p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'right' }}>
-                {
-                    (bg.text == 'white') &&
-                    <>
-                        <img src={active ? "stop-white.svg" : "play-white.svg"} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-                        <img src="settings-white.svg" width={32} height={32} />
-                    </>
-                }
-                {
-                    (bg.text != 'white') &&
-                    <>
-                        <img src={active ? "stop-black.svg" : "play-black.svg"} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-                        <img src="settings-black.svg" width={32} height={32} />
-                    </>
-                }
-            </div>
-        </div>
-    </div>;
-    */
-
-    // return <div className={active ? 'animated-border animated-border-active' : 'animated-border'} style={{ margin: 16 }}>
-    //     //{/* <div style={{ padding: 40, justifyContent: 'center', borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: '#1C1C1C', backgroundImage: `url(./${bg.name}.svg)`, color: bg.text }}> */}
-    //     <div style={{ padding: 40, justifyContent: 'center', borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: '#1C1C1C', backgroundImage: `url(${icon})`, color: bg.text }}>
-    //         <p>Name: {name}</p>
-    //         <p>Created: {created}</p>
-    //         <p>Last Opened: {lastOpened}</p>
-    //         <p>GenericCardGame/main.adept</p>
-    //         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'right' }}>
-    //             {
-    //                 (bg.text == 'white') &&
-    //                 <>
-    //                     <img src={active ? "stop-white.svg" : "play-white.svg"} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-    //                     <img src="settings-white.svg" width={32} height={32} />
-    //                 </>
-    //             }
-    //             {
-    //                 (bg.text != 'white') &&
-    //                 <>
-    //                     <img src={active ? "stop-black.svg" : "play-black.svg"} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-    //                     <img src="settings-black.svg" width={32} height={32} />
-    //                 </>
-    //             }
-    //         </div>
-    //     </div>
-    // </div>;
 }
 
-function NewProject({ name, created, lastOpened, projectID, onClick }: any) {
-    let backgrounds = [
-        { name: 'wave1', text: 'white' },
-        { name: 'wave2', text: 'white' },
-        { name: 'wave3', text: 'white' },
-        { name: 'wave4', text: 'white' },
-        { name: 'wave5', text: '#444444' },
-    ]
-
-    let bg = choose(backgrounds);
-
-    return <div onClick={onClick} style={{ cursor: 'pointer', display: 'flex', height: 296, alignItems: 'center', justifyContent: 'center', margin: 16, borderRadius: 50, minWidth: 512, maxWidth: 640, backgroundColor: '#1C1C1C', color: bg.text }}>
-        <p style={{ alignContent: 'center', justifyContent: 'center', fontSize: 60, color: '#333333' }}>+</p>
+function NewProject(props: { name: string, created: number, lastOpened: number, projectID: number, onClick: () => void }) {
+    return <div className='cursor-pointer flex m-4 w-[506px] h-[290px] items-center justify-center rounded-[50px] bg-[#1C1C1C]' onClick={props.onClick}>
+        <p className='p-0 content-center justify-center text-[60px] text-[#333333]'>+</p>
     </div>;
 }
