@@ -1,8 +1,8 @@
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import './Projects.scss';
-import { useDelayedState } from './useDelayedState';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useDelayedState } from './hooks/useDelayedState';
 import { Wave } from './Wave';
+import './Projects.scss';
 
 function CreateProjectDialog(props: { cancelCreateNewProject: () => void }) {
     return <div className='w-full flex justify-center mt-20'>

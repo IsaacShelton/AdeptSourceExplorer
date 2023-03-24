@@ -1,29 +1,36 @@
 
 import * as d3 from 'd3';
 import path from 'path';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { createGlobalState } from 'react-hooks-global-state';
+import { useAsyncMemo } from './hooks/useAsyncMemo';
+import { plural } from './plural';
 import sqlite from './sqlite';
 
-const { useGlobalState } = createGlobalState({ mode: '', data: null as object | null, hoveredData: {}, hoveredActive: false });
+type FetchDataResult = { data: any[] | null };
+
+type ConnectionGraphInfo = {
+    title: string,
+    unit: string,
+    fetch: () => Promise<FetchDataResult>,
+}
+
+const modes = ['functions-per-file', 'composites-per-file'];
+const { useGlobalState } = createGlobalState({ mode: modes[0], data: null as object | null, hoveredData: {}, hoveredActive: false });
+
+const defaultFetchResult = {
+    data: null,
+};
 
 export function ConnectionGraph({ useProjectGlobalState }: any) {
     const viewWidth = 1200, viewHeight = 800;
 
-    let [data, setData] = useGlobalState('data');
     let [mode, setMode] = useGlobalState('mode');
     let [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
     let [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
     let [projectID] = useProjectGlobalState('projectID');
 
     const svgRef = useRef(null);
-
-    const modes = ['functions-per-file', 'composites-per-file'];
-
-    if (mode == '') {
-        setMode(modes[0]);
-        setData(null);
-    }
 
     const drag = (simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>) => {
         function dragStarted(event: any, d: any) {
@@ -54,7 +61,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
             .on("end", dragEnded);
     };
 
-    const getInfoForMode = (mode: string) => {
+    const getInfoForMode = (mode: string): ConnectionGraphInfo => {
         switch (mode) {
             case 'functions-per-file':
                 return {
@@ -106,7 +113,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                             }
                         }
 
-                        setData(newData);
+                        return { data: newData };
                     }
                 };
             case 'composites-per-file':
@@ -159,27 +166,22 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                             }
                         }
 
-                        setData(newData);
+                        return { data: newData };
                     }
                 };
             default:
                 return {
                     title: 'None',
                     unit: '',
-                    fetch: async () => { },
+                    fetch: async () => {
+                        return defaultFetchResult;
+                    },
                 };
         }
     };
 
-    let { title, fetch, unit } = getInfoForMode(mode);
-
-    if (data == null) {
-        fetch();
-    }
-
-    useEffect(() => {
-        fetch();
-    }, [projectID])
+    let { fetch, unit } = useMemo(() => getInfoForMode(mode), [projectID, mode]);
+    let { data } = useAsyncMemo(fetch, [projectID, mode]) ?? defaultFetchResult;
 
     useEffect(() => {
         const root = d3.hierarchy(data ?? {});
@@ -270,10 +272,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
     return <>
         <div className='absolute w-full flex justify-center align-center mt-16'>
             <div className="custom-select">
-                <select onChange={(event) => {
-                    setMode(event.target.value);
-                    setData(null);
-                }} value={mode} className='text-[20px] font-mono rounded-[50px] select-none p-2 pr-4'>
+                <select onChange={(event) => setMode(event.target.value)} value={mode} className='text-[20px] font-mono rounded-[50px] select-none p-2 pr-4'>
                     {modes.map((mode) => {
                         return <option value={mode} key={mode}>{getInfoForMode(mode).title}</option>
                     })}
@@ -292,7 +291,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                             {hoveredData?.filename && path.basename(hoveredData.filename)}
                         </span>
                         <span className='font-mono text-[#888888] pr-[10px] float-right'>
-                            {hoveredData?.children && (hoveredData.children.length.toString() + ' ' + unit + (hoveredData.children.length > 1 ? 's' : ''))}
+                            {hoveredData?.children && (hoveredData.children.length.toString() + ' ' + unit + plural(hoveredData.children))}
                         </span>
                     </span>
                 </div>
