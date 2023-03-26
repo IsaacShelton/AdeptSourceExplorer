@@ -216,7 +216,7 @@ const OverviewFlow = ({ useProjectGlobalState }: any) => {
         }
     }, []);
 
-    return <div style={{ position: "absolute", width: "100%", height: "100%" }}>
+    return <div className='absolute flex m-0 p-0 w-full h-full justify-center'>
         <ReactFlow
             nodes={nodes}
             edges={edgesWithUpdatedTypes}

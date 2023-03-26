@@ -7,7 +7,7 @@ export function Button(props: ButtonHTMLAttributes<HTMLButtonElement> & { iconUR
         className={`bg-[#343434] hover:bg-[#444444] text-white font-bold py-2 px-4 rounded inline-flex items-center select-none flex-shrink ${className}`}
         {...restProps}
     >
-        <img className={`pr-4 ${noIconShift ? 'absolute' : ''}`} src={iconURL} />
+        <img className={`pr-4 ${noIconShift ? 'absolute' : ''}`} src={iconURL} draggable="false" />
         <span className='w-full text-center pr-2'>{children}</span>
     </button>;
 }

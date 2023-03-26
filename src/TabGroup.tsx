@@ -50,24 +50,24 @@ export default function TabGroup() {
     let viewableTabNames: any[] = projectID < 0 ? tabNames.slice(0, 1) : tabNames;
 
     return (
-        <div className='absolute flex m-0 p-0 w-full' style={{
-            height: (active == 'Project' ? 'auto' : '100%')
-        }} >
-
+        <>
             {TabContent(active)}
 
-            <ButtonGroup>
-                {viewableTabNames.map(type => (
-                    <Tab
-                        key={type}
-                        // @ts-ignore
-                        active={active === type}
-                        onClick={() => setActive(type)}
-                    >
-                        {type}
-                    </Tab>
-                ))}
-            </ButtonGroup>
-        </div >
+            <div className='fixed top-0 flex m-0 p-0 w-full'>
+                <ButtonGroup>
+                    {viewableTabNames.map(type => (
+                        <Tab
+                            key={type}
+                            // @ts-ignore
+                            active={active === type}
+                            onClick={() => setActive(type)}
+                        >
+                            {type}
+                        </Tab>
+                    ))}
+                </ButtonGroup>
+            </div >
+        </>
+
     );
 }

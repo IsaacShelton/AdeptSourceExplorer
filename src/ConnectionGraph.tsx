@@ -45,8 +45,11 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
 
             let items: any[] = d3.select(this).data();
             let data = items.length > 0 ? items[0].data : null;
-            setHoveredData(data);
-            setHoveredActive(true);
+
+            if (!data?.isRoot) {
+                setHoveredData(data);
+                setHoveredActive(true);
+            }
         }
 
         function dragEnded(event: any, d: any) {
@@ -87,7 +90,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                             map.get(FunctionSourceObject)?.add(FunctionName);
                         }
 
-                        let newData: any = { children: [] };
+                        let newData: any = { children: [], isRoot: true };
 
                         for (let [key, funcs] of map) {
                             newData.children.push({
@@ -140,7 +143,7 @@ export function ConnectionGraph({ useProjectGlobalState }: any) {
                             map.get(CompositeSourceObject)?.add(CompositeName);
                         }
 
-                        let newData: any = { children: [] };
+                        let newData: any = { children: [], isRoot: true };
 
                         for (let [key, funcs] of map) {
                             newData.children.push({

@@ -5,10 +5,6 @@ import './samples/node-api';
 import './index.scss';
 import sqlite from './sqlite.js';
 
-import { promises } from 'fs';
-import { createProject } from './createProject';
-const readFile = promises.readFile;
-
 sqlite.run("DROP TABLE IF EXISTS Project");
 sqlite.run("DROP TABLE IF EXISTS Function");
 sqlite.run("DROP TABLE IF EXISTS Composite");
@@ -70,14 +66,6 @@ sqlite.run(`
             ON DELETE CASCADE
     )
 `);
-
-
-createProject("GenericCardGame (test)", "/Users/isaac/AdeptProjects/GenericCardGame/main.adept", "/Users/isaac/Projects/Adept/build/macOS-Debug/").then(() => { });
-// createProject("/Users/isaac/Projects/Adept/build/macOS-Debug/import/2.8/basics.adept").then(() => { });
-// createProject("/Users/isaac/AdeptProjects/Box2D/box2d/box2d.adept").then(() => { });
-// createProject("/Users/isaac/AdeptProjects/MiniBox/main.adept").then(() => { });
-
-// sqlite.tables().then((tables) => console.log(tables));
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>

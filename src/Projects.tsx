@@ -30,7 +30,10 @@ const Label = (props: { children?: ReactNode }) => {
     return <p className='py-2 text-lg'>{props.children}</p>;
 };
 
-function CreateProjectDialog(props: { cancelCreateNewProject: () => void }) {
+function CreateProjectDialog(props: { cancelCreateNewProject: () => void, useProjectGlobalState: any }) {
+    let { useProjectGlobalState } = props;
+    let [_, setActiveProjectID] = useProjectGlobalState('projectID');
+
     const autoFill = () => {
         child_process.exec("adept --root", (err: any, stdout, stderr) => {
             if (infrastructureTextInputRef.current == null) return;
@@ -62,8 +65,10 @@ function CreateProjectDialog(props: { cancelCreateNewProject: () => void }) {
         let filename = rootFileTextInputRef.current.value;
         let infrastructure = infrastructureTextInputRef.current.value;
 
-        createProject(name, filename, infrastructure);
-        props.cancelCreateNewProject();
+        createProject(name, filename, infrastructure).then((newProjectID) => {
+            props.cancelCreateNewProject();
+            setActiveProjectID(newProjectID);
+        });
     };
 
     let infrastructureTextInputRef = useRef<HTMLInputElement>(null);
@@ -89,7 +94,7 @@ function CreateProjectDialog(props: { cancelCreateNewProject: () => void }) {
                 <Button iconURL={magic} onClick={autoFill}>Auto Fill</Button>
             </div>
             <span className='p-4' />
-            <Button onClick={create}>Create Project</Button>
+            <Button onClick={create} className='mb-8'>Create Project</Button>
         </div>
     </div>;
 }
@@ -109,28 +114,34 @@ export default function Projects({ useProjectGlobalState }: any) {
         return sqlite.query(`SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure FROM Project`);
     }, [creating]);
 
-    return <div className='flex flex-wrap mt-12 mb-12 w-full justify-center'>
-        {creating ?
-            <CreateProjectDialog cancelCreateNewProject={cancelCreateNewProject} />
-            :
-            <>
+    if (creating) {
+        return <div className='absolute flex m-0 p-0 w-full h-auto justify-center'>
+            <CreateProjectDialog cancelCreateNewProject={cancelCreateNewProject} useProjectGlobalState={useProjectGlobalState} />
+        </div>
+    } else if (rows == null || rows.length == 0) {
+        return <div className='absolute flex m-0 p-0 w-full h-full'>
+            <div className='flex flex-wrap w-full h-full justify-center content-center'>
                 <NewProject name="Project1" created={1235234} lastOpened={1231432} projectID={-1000} onClick={createNewProject} />
+            </div>;
+        </div>
+    } else {
+        return <div className='absolute flex flex-wrap mt-12 mb-12 w-full justify-center'>
+            <NewProject name="Project1" created={1235234} lastOpened={1231432} projectID={-1000} onClick={createNewProject} />
 
-                {
-                    rows?.map((row: any) => (
-                        <Project
-                            useProjectGlobalState={useProjectGlobalState}
-                            name={row['ProjectName']}
-                            created={1235234}
-                            lastOpened={1231432}
-                            key={row['ProjectID']}
-                            projectID={row['ProjectID']}
-                            pathPreview={path.basename(path.dirname(row['ProjectRootFilename'])) + path.sep + path.basename(row['ProjectRootFilename'])} />
-                    ))
-                }
-            </>
-        }
-    </div>;
+            {
+                rows?.map((row: any) => (
+                    <Project
+                        useProjectGlobalState={useProjectGlobalState}
+                        name={row['ProjectName']}
+                        created={1235234}
+                        lastOpened={1231432}
+                        key={row['ProjectID']}
+                        projectID={row['ProjectID']}
+                        pathPreview={path.basename(path.dirname(row['ProjectRootFilename'])) + path.sep + path.basename(row['ProjectRootFilename'])} />
+                ))
+            }
+        </div>
+    }
 }
 
 function Project({ name, created, lastOpened, projectID, useProjectGlobalState, pathPreview }: any) {
@@ -190,8 +201,8 @@ function Project({ name, created, lastOpened, projectID, useProjectGlobalState, 
             <p className='py-2'>{pathPreview}</p>
         </div>
         <div className='absolute flex right-[-24px] bottom-0 align-center justify-right pr-[72px] select-none'>
-            <img src={active ? stop : play} width={40} height={40} style={{ marginRight: 20 }} onClick={playStop} />
-            <img src={settings} width={32} height={32} />
+            <img src={active ? stop : play} width={40} height={40} draggable="false" className='mr-[20px]' onClick={playStop} />
+            <img src={settings} width={32} height={32} draggable="false" />
         </div>
         <svg id="visual" viewBox="-10 -10 532 276" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio='none' width={512} height={304}>
             <rect ref={borderRectRef} opacity={active ? 1 : 0} style={{ transition: 'opacity 0.3s ease-in-out' }} x="0" y="0" rx="50px" width="512" height="256" fill="transparent" strokeLinecap='square' stroke='white' strokeWidth={16} strokeDashoffset={0}>
