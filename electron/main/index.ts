@@ -1,5 +1,6 @@
 
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { dialog } from 'electron/main';
 import { release } from 'node:os';
 import { join } from 'node:path';
 
@@ -73,7 +74,10 @@ async function createWindow() {
     });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow();
+    ipcMain.handle('dialog:openFile', handleFileOpen);
+});
 
 app.on('window-all-closed', () => {
     win = null;
@@ -97,19 +101,19 @@ app.on('activate', () => {
     }
 });
 
-// New window example arg: new windows url
-ipcMain.handle('open-win', (_, arg) => {
-    const childWindow = new BrowserWindow({
-        webPreferences: {
-            preload,
-            nodeIntegration: true,
-            contextIsolation: false,
-        },
+async function handleFileOpen() {
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+        title: 'Select Root File',
+        properties: ['openFile'],
+        filters: [
+            { name: 'Adept Code', extensions: ['adept'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
     });
 
-    if (process.env.VITE_DEV_SERVER_URL) {
-        childWindow.loadURL(`${url}#${arg}`);
+    if (canceled) {
+        return null;
     } else {
-        childWindow.loadFile(indexHtml, { hash: arg });
+        return filePaths[0];
     }
-});
+}

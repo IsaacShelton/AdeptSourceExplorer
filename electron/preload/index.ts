@@ -1,3 +1,4 @@
+import { ipcRenderer } from "electron";
 
 function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
     return new Promise((resolve) => {
@@ -91,3 +92,7 @@ window.onmessage = (ev) => {
 };
 
 setTimeout(removeLoading, 4999);
+
+(window as any).electronAPI = {
+    openFile: () => ipcRenderer.invoke('dialog:openFile')
+};
