@@ -1,5 +1,4 @@
-
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 /*
     Based off of https://github.com/fivecar/use-delay-follow-state/blob/master/src/index.ts

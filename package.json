@@ -43,6 +43,11 @@
     "engines": {
         "node": "^19.6.0"
     },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true,
+        "printWidth": 100
+    },
     "dependencies": {
         "d3": "^7.8.2",
         "lodash": "^4.17.21",

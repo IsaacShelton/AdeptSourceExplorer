@@ -1,8 +1,7 @@
-
 interface ScheduledInsight {
-    resolve: Function,
-    reject: Function,
-    query_json: object,
+    resolve: Function;
+    reject: Function;
+    query_json: object;
 }
 
 // @ts-ignore
@@ -12,7 +11,8 @@ let is_wasm_initialized = false;
 let scheduled: ScheduledInsight[] = [];
 
 insight_server.Module['onRuntimeInitialized'] = function () {
-    if (!insight_server.Module["noFSInit"] && !insight_server.FS.init.initialized) insight_server.FS.init();
+    if (!insight_server.Module['noFSInit'] && !insight_server.FS.init.initialized)
+        insight_server.FS.init();
     insight_server.TTY.init();
     is_wasm_initialized = true;
 

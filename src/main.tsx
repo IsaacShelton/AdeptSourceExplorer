@@ -3,12 +3,12 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './samples/node-api';
 import './index.scss';
-import sqlite from './sqlite.js';
+import sqlite from './logic/sqlite.js';
 
-sqlite.run("DROP TABLE IF EXISTS Project");
-sqlite.run("DROP TABLE IF EXISTS Function");
-sqlite.run("DROP TABLE IF EXISTS Composite");
-sqlite.run("DROP TABLE IF EXISTS Call");
+sqlite.run('DROP TABLE IF EXISTS Project');
+sqlite.run('DROP TABLE IF EXISTS Function');
+sqlite.run('DROP TABLE IF EXISTS Composite');
+sqlite.run('DROP TABLE IF EXISTS Call');
 sqlite.run(`
     CREATE TABLE IF NOT EXISTS Project (
         ProjectID Integer PRIMARY KEY AUTOINCREMENT,
@@ -70,7 +70,7 @@ sqlite.run(`
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
         <App />
-    </React.StrictMode>,
-)
+    </React.StrictMode>
+);
 
-postMessage({ payload: 'removeLoading' }, '*')
+postMessage({ payload: 'removeLoading' }, '*');

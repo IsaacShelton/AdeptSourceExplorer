@@ -1,4 +1,4 @@
-import assert from "assert";
+import assert from 'assert';
 
 export function downsample(items: any[], maxCount: number) {
     assert(maxCount > 0);
@@ -16,10 +16,10 @@ export function downsample(items: any[], maxCount: number) {
     let middleItems = [];
     let rest = items.slice(1, items.length - 1);
     let islands = maxCount - 2;
-    let padding = Math.floor(0.5 * (rest.length - islands * rest.length / (islands + 1)));
+    let padding = Math.floor(0.5 * (rest.length - (islands * rest.length) / (islands + 1)));
 
     for (let i = 0; i < islands; i++) {
-        let index = padding + Math.round(i * rest.length / (islands + 1));
+        let index = padding + Math.round((i * rest.length) / (islands + 1));
         middleItems.push(rest[index]);
     }
 

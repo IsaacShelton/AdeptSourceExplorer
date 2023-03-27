@@ -10,7 +10,9 @@ import classNames from 'classnames';
 import { isNumOrStr } from 'recharts/lib/util/DataUtils';
 
 function defaultFormatter<TValue extends ValueType>(value: TValue) {
-    return _.isArray(value) && isNumOrStr(value[0]) && isNumOrStr(value[1]) ? (value.join(' ~ ') as TValue) : value;
+    return _.isArray(value) && isNumOrStr(value[0]) && isNumOrStr(value[1])
+        ? (value.join(' ~ ') as TValue)
+        : value;
 }
 
 export type TooltipType = 'none';
@@ -21,7 +23,7 @@ export type Formatter<TValue extends ValueType, TName extends NameType> = (
     name: TName,
     item: Payload<TValue, TName>,
     index: number,
-    payload: Array<Payload<TValue, TName>>,
+    payload: Array<Payload<TValue, TName>>
 ) => [TValue, TName] | TValue;
 
 export interface Payload<TValue extends ValueType, TName extends NameType> {
@@ -53,9 +55,10 @@ export interface Props<TValue extends ValueType, TName extends NameType> {
     itemSorter?: (item: Payload<TValue, TName>) => number | string;
 }
 
-export class CustomTooltipContent<TValue extends ValueType, TName extends NameType> extends PureComponent<
-    Props<TValue, TName>
-> {
+export class CustomTooltipContent<
+    TValue extends ValueType,
+    TName extends NameType
+> extends PureComponent<Props<TValue, TName>> {
     static displayName = 'CustomTooltipContent';
 
     static defaultProps = {
@@ -97,22 +100,29 @@ export class CustomTooltipContent<TValue extends ValueType, TName extends NameTy
                 let topNames = entry?.payload?.topNames;
                 let string = topNames.slice(0, 3).join(', ');
 
-
                 return (
                     // eslint-disable-next-line react/no-array-index-key
-                    <li className="recharts-tooltip-item" key={`tooltip-item-${i}`} style={finalItemStyle}>
-                        {isNumOrStr(name) ? <span className="recharts-tooltip-item-name">{name}</span> : null}
-                        {isNumOrStr(name) ? <span className="recharts-tooltip-item-separator">{separator}</span> : null}
+                    <li
+                        className="recharts-tooltip-item"
+                        key={`tooltip-item-${i}`}
+                        style={finalItemStyle}
+                    >
+                        {isNumOrStr(name) ? (
+                            <span className="recharts-tooltip-item-name">{name}</span>
+                        ) : null}
+                        {isNumOrStr(name) ? (
+                            <span className="recharts-tooltip-item-separator">{separator}</span>
+                        ) : null}
                         <span className="recharts-tooltip-item-value">{value}</span>
                         <span className="recharts-tooltip-item-unit">{entry.unit || ''}</span>
                         <br />
-                        <span style={finalLabelStyle}>
-                            {string}
-                        </span>
-                        <span style={{ ...finalLabelStyle, fontStyle: 'italic ', color: '#777777' }}>
+                        <span style={finalLabelStyle}>{string}</span>
+                        <span
+                            style={{ ...finalLabelStyle, fontStyle: 'italic ', color: '#777777' }}
+                        >
                             {topNames.length > 3 ? ', and more' : ''}
                         </span>
-                    </li >
+                    </li>
                 );
             });
 
@@ -127,7 +137,15 @@ export class CustomTooltipContent<TValue extends ValueType, TName extends NameTy
     }
 
     render() {
-        const { wrapperClassName, contentStyle, labelClassName, labelStyle, label, labelFormatter, payload } = this.props;
+        const {
+            wrapperClassName,
+            contentStyle,
+            labelClassName,
+            labelStyle,
+            label,
+            labelFormatter,
+            payload,
+        } = this.props;
         const finalStyle: CSSProperties = {
             margin: 0,
             padding: 10,

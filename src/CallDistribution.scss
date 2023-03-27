@@ -1,6 +1,3 @@
-// Learn about this solution to creating custom select styles:
-// @link https://moderncss.dev/custom-select-styles-with-pure-css/
-
 *,
 *::before,
 *::after {
@@ -24,11 +21,8 @@ select {
     }
 
     outline: none;
-}
-
-select {
     display: grid;
-    grid-template-areas: "select";
+    grid-template-areas: 'select';
     align-items: center;
     position: relative;
 
@@ -38,11 +32,9 @@ select {
     }
 
     min-width: 15ch;
-
     border: 1px solid var(--select-border);
     border-radius: 0.25em;
     padding: 0.25em 0.5em;
-
     font-size: 1rem;
     cursor: pointer;
     line-height: 1.1;
@@ -54,10 +46,4 @@ select {
 label {
     font-size: 1.125rem;
     font-weight: 500;
-}
-
-.downsampled-message {
-    position: absolute;
-    pointer-events: none;
-    margin-top: 24px;
 }
