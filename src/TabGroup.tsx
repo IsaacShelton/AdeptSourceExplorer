@@ -1,9 +1,9 @@
 import { ReactNode, useState } from 'react';
-import { createGlobalState } from 'react-hooks-global-state';
 import CallDistribution from './CallDistribution';
 import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 import Projects from './Projects';
+import { useProjectGlobalState } from './useProjectGlobalState';
 
 const Tab = (props: { active: boolean; children?: ReactNode; onClick: () => any }) => {
     let style = props.active
@@ -30,18 +30,17 @@ const ButtonGroup = (props: { children?: ReactNode }) => {
 };
 
 const tabNames = ['Project', 'Function View', 'Call Distribution', 'Connection Graph'];
-const { useGlobalState: useProjectGlobalState } = createGlobalState({ projectID: -1 });
 
 const TabContent = (kind: string) => {
     switch (kind) {
         case 'Project':
-            return <Projects useProjectGlobalState={useProjectGlobalState} />;
+            return <Projects />;
         case 'Function View':
-            return <OverviewFlow useProjectGlobalState={useProjectGlobalState} />;
+            return <OverviewFlow />;
         case 'Call Distribution':
-            return <CallDistribution useProjectGlobalState={useProjectGlobalState} />;
+            return <CallDistribution />;
         case 'Connection Graph':
-            return <ConnectionGraph useProjectGlobalState={useProjectGlobalState} />;
+            return <ConnectionGraph />;
         default:
             return <></>;
     }

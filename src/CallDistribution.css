@@ -15,22 +15,11 @@ select {
     line-height: inherit;
     z-index: 1;
     margin: 16px;
-
-    &::-ms-expand {
-        display: none;
-    }
-
     outline: none;
     display: grid;
     grid-template-areas: 'select';
     align-items: center;
     position: relative;
-
-    select,
-    &::after {
-        grid-area: select;
-    }
-
     min-width: 15ch;
     border: 1px solid var(--select-border);
     border-radius: 0.25em;
@@ -41,6 +30,7 @@ select {
 
     background-image: linear-gradient(to top, #202020, #242424 33%);
     color: white;
+    outline: none;
 }
 
 label {

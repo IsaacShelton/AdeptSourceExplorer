@@ -7,20 +7,23 @@ import settingsWhite from '@/assets/settingsWhite.svg';
 import { useDelayedState } from '@/hooks/useDelayedState';
 import { Wave, WaveColor } from './Wave';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useProjectGlobalState } from '@/useProjectGlobalState';
+import { ProjectsAction } from '@/ProjectsDispatch';
 
-export function Project({
-    name,
-    created,
-    lastOpened,
-    projectID,
-    useProjectGlobalState,
-    pathPreview,
-}: any) {
+export function Project(props: {
+    name: string;
+    created: number;
+    lastOpened: number;
+    projectID: number;
+    pathPreview: string;
+    dispatch: React.Dispatch<ProjectsAction>;
+}) {
     let [length, setLength] = useState(0);
     let [activeProjectID, setActiveProjectID] = useProjectGlobalState('projectID');
     let [showAnimation, setShowAnimation] = useDelayedState(false);
+    let borderRectRef: any = useRef(null);
 
-    let active = activeProjectID == projectID;
+    let active = activeProjectID == props.projectID;
 
     const backgrounds: { color: WaveColor; text: string }[] = [
         { color: 'blue', text: 'white' },
@@ -30,31 +33,9 @@ export function Project({
         { color: 'yellow', text: '#444444' },
     ];
 
-    let bg = backgrounds[Math.abs(projectID - 1) % backgrounds.length];
+    const bg = backgrounds[Math.abs(props.projectID - 1) % backgrounds.length];
 
-    let playStop = useCallback(() => {
-        setActiveProjectID(active ? -1 : projectID);
-    }, [activeProjectID]);
-
-    useEffect(() => {
-        if (active) {
-            setShowAnimation(true, 0);
-        } else {
-            setShowAnimation(false, 300);
-        }
-    }, [active]);
-
-    let borderRectRef: any = useRef(null);
-
-    useLayoutEffect(() => {
-        let len = borderRectRef.current.getTotalLength();
-        let dasharray = len / 8;
-
-        setLength(len);
-        borderRectRef.current.setAttribute('stroke-dasharray', dasharray);
-    }, []);
-
-    let { play, stop, settings } =
+    const { play, stop, settings } =
         bg.text == 'white'
             ? {
                   play: playWhite,
@@ -67,13 +48,36 @@ export function Project({
                   settings: settingsBlack,
               };
 
+    const playStop = useCallback(() => {
+        setActiveProjectID(active ? -1 : props.projectID);
+    }, [activeProjectID]);
+
+    const edit = () => props.dispatch({ type: 'edit', payload: { projectID: props.projectID } });
+
+    useEffect(() => {
+        if (active) {
+            setShowAnimation(true, 0);
+        } else {
+            setShowAnimation(false, 300);
+        }
+    }, [active]);
+
+    useLayoutEffect(() => {
+        if (borderRectRef.current) {
+            let perimeter = borderRectRef.current.getTotalLength();
+
+            setLength(perimeter);
+            borderRectRef.current.setAttribute('stroke-dasharray', perimeter / 8);
+        }
+    }, []);
+
     return (
         <div className="relative m-3 w-128 h-64 mb-16">
             <div className="absolute p-4 mt-8 mb-8 ml-10 w-full h-full" style={{ color: bg.text }}>
-                <p className="py-2">Name: {name}</p>
-                <p className="py-2">Created: {created}</p>
-                <p className="py-2">Last Opened: {lastOpened}</p>
-                <p className="py-2">{pathPreview}</p>
+                <p className="py-2">Name: {props.name}</p>
+                <p className="py-2">Created: {props.created}</p>
+                <p className="py-2">Last Opened: {props.lastOpened}</p>
+                <p className="py-2">{props.pathPreview}</p>
             </div>
             <div className="absolute flex right-[-24px] bottom-0 align-center justify-right pr-[72px] select-none">
                 <img
@@ -84,7 +88,7 @@ export function Project({
                     className="mr-[20px]"
                     onClick={playStop}
                 />
-                <img src={settings} width={32} height={32} draggable="false" />
+                <img src={settings} width={32} height={32} draggable="false" onClick={edit} />
             </div>
             <svg
                 id="visual"

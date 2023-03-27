@@ -5,9 +5,12 @@ export function Button(
         iconURL?: string;
         noIconShift?: boolean;
         children?: ReactNode;
+        childrenClassName?: string;
     }
 ) {
-    let { iconURL, noIconShift, children, className, ...restProps } = props;
+    let { iconURL, noIconShift, children, className, childrenClassName, ...restProps } = props;
+
+    noIconShift = noIconShift || iconURL == null;
 
     return (
         <button
@@ -19,7 +22,11 @@ export function Button(
                 src={iconURL}
                 draggable="false"
             />
-            <span className="w-full text-center pr-2">{children}</span>
+            <span
+                className={`w-full text-center ${noIconShift ? '' : 'pr-2'} ${childrenClassName}`}
+            >
+                {children}
+            </span>
         </button>
     );
 }

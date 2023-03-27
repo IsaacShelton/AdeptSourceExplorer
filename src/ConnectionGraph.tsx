@@ -5,6 +5,7 @@ import { createGlobalState } from 'react-hooks-global-state';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
 import sqlite from './logic/sqlite';
+import { useProjectGlobalState } from './useProjectGlobalState';
 
 type FetchDataResult = { data: any[] | null };
 
@@ -26,7 +27,7 @@ const defaultFetchResult = {
     data: null,
 };
 
-export function ConnectionGraph({ useProjectGlobalState }: any) {
+export function ConnectionGraph() {
     const viewWidth = 1200;
     const viewHeight = 800;
 

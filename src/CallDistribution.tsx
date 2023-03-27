@@ -1,7 +1,13 @@
-import { XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
 import sqlite from './logic/sqlite';
 import { createGlobalState } from 'react-hooks-global-state';
-import './CallDistribution.scss';
+import { CustomTooltipContent } from './CustomTooltip';
+import { useMemo } from 'react';
+import { downsample } from './logic/downsample';
+import { useAsyncMemo } from './hooks/useAsyncMemo';
+import { plural } from './logic/plural';
+import { useProjectGlobalState } from './useProjectGlobalState';
+import './CallDistribution.css';
 
 const modes = ['callee-vs-frequency', 'function-name-vs-frequency'];
 const { useGlobalState } = createGlobalState({
@@ -9,12 +15,6 @@ const { useGlobalState } = createGlobalState({
     data: null as any[] | null,
     isDownsampled: false,
 });
-
-import { CustomTooltipContent } from './CustomTooltip';
-import { useMemo } from 'react';
-import { downsample } from './logic/downsample';
-import { useAsyncMemo } from './hooks/useAsyncMemo';
-import { plural } from './logic/plural';
 
 type FetchDataResult = { data: any[] | null; isDownsampled: boolean };
 
@@ -30,7 +30,7 @@ type ChartInfo = {
     labelFormatter?: (value: any) => string;
 };
 
-export default function CallDistribution({ useProjectGlobalState }: any) {
+export default function CallDistribution() {
     let [mode, setMode] = useGlobalState('mode');
     let [projectID] = useProjectGlobalState('projectID');
 
@@ -252,11 +252,7 @@ export default function CallDistribution({ useProjectGlobalState }: any) {
                         </div>
                     )}
                     {data != null && data.length > 0 && (
-                        <div className="relative left-[-32px]">
-                            <ResponsiveContainer width={800} height={600}>
-                                {getChart(layout)}
-                            </ResponsiveContainer>
-                        </div>
+                        <div className="relative left-[-32px]">{getChart(layout)}</div>
                     )}
                 </div>
             </div>
