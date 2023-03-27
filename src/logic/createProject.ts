@@ -124,5 +124,7 @@ export async function createProject(
         }
     }
 
+    await sqlite.save();
+
     return projectID;
 }

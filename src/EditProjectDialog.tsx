@@ -10,6 +10,7 @@ import magic from './assets/magic.svg';
 import { useProjectGlobalState } from './useProjectGlobalState';
 import sqlite from './logic/sqlite';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
+import { setupDatabase } from './setupDatabase';
 
 export function EditProjectDialog(props: { projectID: number; exitCreatingProject: () => void }) {
     let [_, setActiveProjectID] = useProjectGlobalState('projectID');
@@ -53,6 +54,33 @@ export function EditProjectDialog(props: { projectID: number; exitCreatingProjec
             }
         );
     }, []);
+
+    const del = () => {
+        (async () => {
+            await sqlite.query(`DELETE FROM Project WHERE ProjectID = :ProjectID`, {
+                ':ProjectID': props.projectID,
+            });
+
+            await sqlite.save();
+        })().then(() => {
+            setActiveProjectID(-1);
+            props.exitCreatingProject();
+        });
+    };
+
+    const reset = () => {
+        (async () => {
+            await sqlite.run('DROP TABLE IF EXISTS Project');
+            await sqlite.run('DROP TABLE IF EXISTS Function');
+            await sqlite.run('DROP TABLE IF EXISTS Composite');
+            await sqlite.run('DROP TABLE IF EXISTS Call');
+            await setupDatabase();
+            await sqlite.save();
+        })().then(() => {
+            setActiveProjectID(-1);
+            props.exitCreatingProject();
+        });
+    };
 
     let row: any = rows && rows.length > 0 ? rows[0] : {};
 
@@ -101,11 +129,21 @@ export function EditProjectDialog(props: { projectID: number; exitCreatingProjec
                         Save Project
                     </Button>
                     <Button
-                        onClick={save}
+                        onClick={del}
                         className="mb-8 bg-red-600 hover:bg-red-500"
                         childrenClassName="px-8"
                     >
                         Delete Project
+                    </Button>
+                </div>
+                <span className="p-8" />
+                <div className="w-full flex justify-around">
+                    <Button
+                        onClick={reset}
+                        className="mb-8 bg-red-900 hover:bg-red-800"
+                        childrenClassName="px-8"
+                    >
+                        Reset Entire Database
                     </Button>
                 </div>
             </div>
