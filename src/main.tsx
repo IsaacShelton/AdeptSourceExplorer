@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import './samples/node-api';
-import './index.scss';
+import './index.css';
 import sqlite from './logic/sqlite.js';
 
 sqlite.run('DROP TABLE IF EXISTS Project');

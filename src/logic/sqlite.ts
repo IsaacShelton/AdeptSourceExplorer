@@ -2,11 +2,13 @@ import { readFile, writeFile } from 'fs';
 import initSqlJs, { Database } from 'sql.js';
 
 const DATABASE_FILENAME = './database.db';
-const SQL = await initSqlJs({ locateFile: (file: any) => `https://sql.js.org/dist/${file}` });
+const SQL_JS = initSqlJs({ locateFile: (file: string) => `https://sql.js.org/dist/${file}` });
 
 let database: Promise<Database> = new Promise(function (resolve, reject) {
-    readFile('./database.db', null, function (err, data) {
-        resolve(err ? new SQL.Database() : new SQL.Database(data));
+    SQL_JS.then((SQL) => {
+        readFile('./database.db', null, function (err, data) {
+            resolve(err ? new SQL.Database() : new SQL.Database(data));
+        });
     });
 });
 

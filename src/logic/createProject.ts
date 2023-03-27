@@ -1,5 +1,5 @@
 import { promises } from 'fs';
-import { invokeInsight } from '../insight/insight';
+import { invokeInsight } from '@/insight/insight';
 import { now } from '@/logic/now';
 import sqlite from './sqlite';
 
