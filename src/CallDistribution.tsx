@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { downsample } from './logic/downsample';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
-import { useProjectGlobalState } from './useProjectGlobalState';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import './CallDistribution.css';
 
 const modes = ['callee-vs-frequency', 'function-name-vs-frequency'];

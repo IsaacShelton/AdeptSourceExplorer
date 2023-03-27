@@ -15,7 +15,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import FlowNodeLabel, { FlowNodeLabelIcon } from './components/FlowNodeLabel';
 import sqlite from './logic/sqlite';
-import { useProjectGlobalState } from './useProjectGlobalState';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 const OverviewFlow = () => {
     // Create nodes

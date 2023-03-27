@@ -27,48 +27,76 @@ const safeDOM = {
     },
 };
 
-/**
- * https://tobiasahlin.com/spinkit
- * https://connoratherton.com/loaders
- * https://projects.lukehaas.me/css-loaders
- * https://matejkustec.github.io/SpinThatShit
- */
+// https://projects.lukehaas.me/css-loaders/
 function useLoading() {
-    const className = `loaders-css__square-spin`;
     const styleContent = `
-@keyframes square-spin {
-  25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
-  50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
-  75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
-  100% { transform: perspective(100px) rotateX(0) rotateY(0); }
-}
-.${className} > div {
-  animation-fill-mode: both;
-  width: 50px;
-  height: 50px;
-  background: #fff;
-  animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
-}
-.app-loading-wrap {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #282c34;
-  z-index: 9;
-}
-    `;
+    body {
+        background-color: #242424;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .outer-loader {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .loader,
+    .loader:after {
+        border-radius: 50%;
+        width: 4em;
+        height: 4em;
+    }
+
+    .loader {
+        margin: 0;
+        padding: 0;
+        font-size: 10px;
+        text-indent: -9999em;
+        border-top: 0.5em solid rgba(255, 255, 255, 0.2);
+        border-right: 0.5em solid rgba(255, 255, 255, 0.2);
+        border-bottom: 0.5em solid rgba(255, 255, 255, 0.2);
+        border-left: 0.5em solid #ffffff;
+        -webkit-animation: load8 1.1s infinite linear;
+        animation: load8 1.1s infinite linear;
+    }
+
+    @-webkit-keyframes load8 {
+        0% {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes load8 {
+        0% {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    } `;
     const oStyle = document.createElement('style');
     const oDiv = document.createElement('div');
 
-    oStyle.id = 'app-loading-style';
+    oStyle.id = 'loader';
     oStyle.innerHTML = styleContent;
-    oDiv.className = 'app-loading-wrap';
-    oDiv.innerHTML = `<div class="${className}"><div></div></div>`;
+    oDiv.className = 'outer-loader';
+    oDiv.innerHTML = '<div class="loader"></div>'
 
     return {
         appendLoading() {

@@ -8,7 +8,7 @@ import { createProject } from './logic/createProject';
 import backArrowIcon from './assets/backArrow.svg';
 import selectFileIcon from './assets/selectFile.svg';
 import magic from './assets/magic.svg';
-import { useProjectGlobalState } from './useProjectGlobalState';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 export function CreateProjectDialog(props: { exitCreatingProject: () => void }) {
     let [_, setActiveProjectID] = useProjectGlobalState('projectID');

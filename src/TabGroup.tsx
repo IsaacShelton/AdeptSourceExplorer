@@ -3,7 +3,7 @@ import CallDistribution from './CallDistribution';
 import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 import Projects from './Projects';
-import { useProjectGlobalState } from './useProjectGlobalState';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 const Tab = (props: { active: boolean; children?: ReactNode; onClick: () => any }) => {
     let style = props.active

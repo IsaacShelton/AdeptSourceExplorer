@@ -5,7 +5,7 @@ import { createGlobalState } from 'react-hooks-global-state';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
 import sqlite from './logic/sqlite';
-import { useProjectGlobalState } from './useProjectGlobalState';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 type FetchDataResult = { data: any[] | null };
 

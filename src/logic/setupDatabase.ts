@@ -1,4 +1,4 @@
-import sqlite from "./logic/sqlite";
+import sqlite from "./sqlite";
 
 export async function setupDatabase() {
     await sqlite.run(`

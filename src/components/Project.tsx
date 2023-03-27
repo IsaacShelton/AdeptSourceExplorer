@@ -7,7 +7,7 @@ import settingsWhite from '@/assets/settingsWhite.svg';
 import { useDelayedState } from '@/hooks/useDelayedState';
 import { Wave, WaveColor } from './Wave';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useProjectGlobalState } from '@/useProjectGlobalState';
+import { useProjectGlobalState } from '@/hooks/useProjectGlobalState';
 import { ProjectsAction } from '@/ProjectsDispatch';
 
 export function Project(props: {

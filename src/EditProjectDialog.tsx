@@ -7,10 +7,10 @@ import { TextInput } from './components/TextInput';
 import backArrowIcon from './assets/backArrow.svg';
 import selectFileIcon from './assets/selectFile.svg';
 import magic from './assets/magic.svg';
-import { useProjectGlobalState } from './useProjectGlobalState';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import sqlite from './logic/sqlite';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
-import { setupDatabase } from './setupDatabase';
+import { setupDatabase } from './logic/setupDatabase';
 
 export function EditProjectDialog(props: { projectID: number; exitCreatingProject: () => void }) {
     let [_, setActiveProjectID] = useProjectGlobalState('projectID');
