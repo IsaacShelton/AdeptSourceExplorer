@@ -10,6 +10,7 @@ import { EditProjectDialog } from './EditProjectDialog';
 import sortIcon from './assets/filterGray.svg';
 import settingsIcon from './assets/settingsGray.svg';
 import { AllSettingsDialog } from './AllSettingsDialog';
+import { formatNumber } from './logic/formatNumber';
 
 export default function Projects() {
     let [state, dispatch] = useReducer(
@@ -37,23 +38,36 @@ export default function Projects() {
         }
     );
 
-    let newProject = useCallback(() => {
-        dispatch({ type: 'create' });
-    }, [dispatch]);
+    let newProject = useCallback(() => dispatch({ type: 'create' }), [dispatch]);
+    let viewProjects = useCallback(() => dispatch({ type: 'projects' }), [dispatch]);
+    let allSettings = useCallback(() => dispatch({ type: 'settings' }), [dispatch]);
 
-    let viewProjects = useCallback(() => {
-        dispatch({ type: 'projects' });
-    }, [dispatch]);
+    let rows = useAsyncMemo(
+        async () =>
+            await sqlite.query(
+                `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated FROM Project`
+            ),
+        [state]
+    );
 
-    let allSettings = useCallback(() => {
-        dispatch({ type: 'settings' });
-    }, [dispatch]);
+    let funcsInfo = useAsyncMemo(
+        async () => sqlite.query(`SELECT count(*) as NumFunctions FROM Function`),
+        [state]
+    );
 
-    let rows = useAsyncMemo(async () => {
-        return await sqlite.query(
-            `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated FROM Project`
-        );
-    }, [state]);
+    let compositesInfo = useAsyncMemo(
+        async () => await sqlite.query(`SELECT count(*) as NumComposites FROM Composite`),
+        [state]
+    );
+
+    let callsInfo = useAsyncMemo(
+        async () => await sqlite.query(`SELECT count(*) as NumCalls FROM Call`),
+        [state]
+    );
+
+    let numFunctions = funcsInfo ? (funcsInfo as any)[0]['NumFunctions'] : 0;
+    let numComposites = compositesInfo ? (compositesInfo as any)[0]['NumComposites'] : 0;
+    let numCalls = callsInfo ? (callsInfo as any)[0]['NumCalls'] : 0;
 
     if (state.submenu == 'create') {
         return (
@@ -88,9 +102,9 @@ export default function Projects() {
                     <div className="mt-4 mb-2 w-full text-[#5C5C5C] h-8">
                         <div className="absolute w-full flex justify-center pointer-events-none select-none">
                             <p className="px-4">Projects: {rows.length}</p>
-                            <p className="px-4">Functions: {rows.length}</p>
-                            <p className="px-4">Composites: {rows.length}</p>
-                            <p className="px-4">Calls: {rows.length}</p>
+                            <p className="px-4">Functions: {formatNumber(numFunctions)}</p>
+                            <p className="px-4">Composites: {formatNumber(numComposites)}</p>
+                            <p className="px-4">Calls: {formatNumber(numCalls)}</p>
                         </div>
                         <img src={sortIcon} className="float-right px-12 select-none" />
                         <img
@@ -107,7 +121,7 @@ export default function Projects() {
                             ProjectRootFilename: rootFilename,
                             ProjectCreated: projectCreatedTime,
                             ProjectLastOpened: projectLastOpenedTime,
-                            ProjectUpdated: projectUpdatedTime,
+                            ProjectUpdated: _,
                         }: any) => {
                             let pathPreview =
                                 basename(dirname(rootFilename)) + path.sep + basename(rootFilename);
