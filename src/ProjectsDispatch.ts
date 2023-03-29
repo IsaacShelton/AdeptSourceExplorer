@@ -1,5 +1,5 @@
 
-export type ProjectsSubmenu = 'projects' | 'create' | 'edit';
+export type ProjectsSubmenu = 'projects' | 'create' | 'edit' | 'settings';
 
 export type ProjectsState = {
     submenu: ProjectsSubmenu;
@@ -9,4 +9,5 @@ export type ProjectsState = {
 export type ProjectsAction =
     | { type: 'projects' }
     | { type: 'create' }
-    | { type: 'edit'; payload: { projectID: number } };
+    | { type: 'edit'; payload: { projectID: number } }
+    | { type: 'settings' };

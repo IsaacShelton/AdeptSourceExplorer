@@ -16,7 +16,7 @@ const Tab = (props: { active: boolean; children?: ReactNode; onClick: () => any 
             style={style}
             className="whitespace-nowrap select-none text-[20px] py-[10px] px-[60px] mx-1 border-none
         cursor-pointer bg-transparent font-sans lowercase text-white pt-[4px]
-        transition-background-color duration-100 ease-in rounded-[20px]"
+        transition-background-color duration-100 ease-in rounded-[20px] outline-none"
         >
             {props.children}
         </button>
@@ -58,7 +58,7 @@ export default function TabGroup() {
 
             <div className="fixed top-0 flex m-0 p-0 w-full">
                 <ButtonGroup>
-                    {viewableTabNames.map((type) => (
+                    {viewableTabNames.map(type => (
                         <Tab key={type} active={active === type} onClick={() => setActive(type)}>
                             {type}
                         </Tab>

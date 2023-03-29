@@ -75,12 +75,11 @@ export function ConnectionGraph() {
                     unit: 'Function',
                     fetch: async () => {
                         let rows: any[] = await sqlite.query(
-                            `
-                            SELECT FunctionName, FunctionSourceObject
+                            `SELECT FunctionName, FunctionSourceObject
                                 FROM Function
                                 WHERE Function.ProjectID = :ProjectID
                                 GROUP BY FunctionName, FunctionSourceObject
-                        `,
+                            `,
                             {
                                 ':ProjectID': projectID,
                             }
@@ -102,8 +101,8 @@ export function ConnectionGraph() {
                             newData.children.push({
                                 name: path.basename(key),
                                 filename: key,
-                                children: Array.from(funcs).map((x: string) => {
-                                    return { functionName: x };
+                                children: Array.from(funcs).map(functionName => {
+                                    return { functionName };
                                 }),
                             });
                         }
@@ -133,12 +132,11 @@ export function ConnectionGraph() {
                     unit: 'Composite',
                     fetch: async () => {
                         let rows: any[] = await sqlite.query(
-                            `
-                            SELECT CompositeName, CompositeSourceObject
+                            `SELECT CompositeName, CompositeSourceObject
                                 FROM Composite
                                 WHERE Composite.ProjectID = :ProjectID
                                 GROUP BY CompositeName, CompositeSourceObject
-                        `,
+                            `,
                             {
                                 ':ProjectID': projectID,
                             }
@@ -160,8 +158,8 @@ export function ConnectionGraph() {
                             newData.children.push({
                                 name: path.basename(key),
                                 filename: key,
-                                children: Array.from(funcs).map((x: string) => {
-                                    return { compositeName: x };
+                                children: Array.from(funcs).map(compositeName => {
+                                    return { compositeName };
                                 }),
                             });
                         }
@@ -300,11 +298,11 @@ export function ConnectionGraph() {
             <div className="absolute w-full flex justify-center align-center mt-16">
                 <div className="custom-select">
                     <select
-                        onChange={(event) => setMode(event.target.value)}
+                        onChange={event => setMode(event.target.value)}
                         value={mode}
                         className="text-[20px] font-mono rounded-[50px] select-none p-2 pr-4"
                     >
-                        {modes.map((mode) => {
+                        {modes.map(mode => {
                             return (
                                 <option value={mode} key={mode}>
                                     {getInfoForMode(mode).title}

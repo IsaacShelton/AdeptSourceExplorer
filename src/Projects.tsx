@@ -7,6 +7,9 @@ import { NewProject } from './components/NewProject';
 import { CreateProjectDialog } from './CreateProjectDialog';
 import type { ProjectsAction, ProjectsState } from './ProjectsDispatch';
 import { EditProjectDialog } from './EditProjectDialog';
+import sortIcon from './assets/filterGray.svg';
+import settingsIcon from './assets/settingsGray.svg';
+import { AllSettingsDialog } from './AllSettingsDialog';
 
 export default function Projects() {
     let [state, dispatch] = useReducer(
@@ -20,6 +23,10 @@ export default function Projects() {
                     return {
                         submenu: 'edit',
                         projectID: action.payload.projectID,
+                    };
+                case 'settings':
+                    return {
+                        submenu: 'settings',
                     };
                 default:
                     return { submenu: 'projects' };
@@ -38,9 +45,13 @@ export default function Projects() {
         dispatch({ type: 'projects' });
     }, [dispatch]);
 
+    let allSettings = useCallback(() => {
+        dispatch({ type: 'settings' });
+    }, [dispatch]);
+
     let rows = useAsyncMemo(async () => {
         return await sqlite.query(
-            `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure FROM Project`
+            `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated FROM Project`
         );
     }, [state]);
 
@@ -53,10 +64,13 @@ export default function Projects() {
     } else if (state.submenu == 'edit') {
         return (
             <div className="absolute flex m-0 p-0 w-full h-auto justify-center">
-                <EditProjectDialog
-                    exitCreatingProject={viewProjects}
-                    projectID={state.projectID ?? -1}
-                />
+                <EditProjectDialog back={viewProjects} projectID={state.projectID ?? -1} />
+            </div>
+        );
+    } else if (state.submenu == 'settings') {
+        return (
+            <div className="absolute flex m-0 p-0 w-full h-auto justify-center">
+                <AllSettingsDialog back={viewProjects} />
             </div>
         );
     } else if (rows == null || rows.length == 0) {
@@ -69,31 +83,50 @@ export default function Projects() {
         );
     } else {
         return (
-            <div className="absolute flex flex-wrap mt-12 mb-12 w-full justify-center">
-                <NewProject onClick={newProject} />
-                {rows?.map(
-                    ({
-                        ProjectID: projectID,
-                        ProjectName: projectName,
-                        ProjectRootFilename: rootFilename,
-                    }: any) => {
-                        let pathPreview =
-                            basename(dirname(rootFilename)) + path.sep + basename(rootFilename);
+            <>
+                <div className="absolute flex flex-wrap mt-11 mb-10 w-full justify-center">
+                    <div className="mt-4 mb-2 w-full text-[#5C5C5C] h-8">
+                        <div className="absolute w-full flex justify-center pointer-events-none select-none">
+                            <p className="px-4">Projects: {rows.length}</p>
+                            <p className="px-4">Functions: {rows.length}</p>
+                            <p className="px-4">Composites: {rows.length}</p>
+                            <p className="px-4">Calls: {rows.length}</p>
+                        </div>
+                        <img src={sortIcon} className="float-right px-12 select-none" />
+                        <img
+                            src={settingsIcon}
+                            className="float-right pl-12 select-none"
+                            onClick={allSettings}
+                        />
+                    </div>
+                    <NewProject onClick={newProject} />
+                    {rows?.map(
+                        ({
+                            ProjectID: projectID,
+                            ProjectName: projectName,
+                            ProjectRootFilename: rootFilename,
+                            ProjectCreated: projectCreatedTime,
+                            ProjectLastOpened: projectLastOpenedTime,
+                            ProjectUpdated: projectUpdatedTime,
+                        }: any) => {
+                            let pathPreview =
+                                basename(dirname(rootFilename)) + path.sep + basename(rootFilename);
 
-                        return (
-                            <Project
-                                name={projectName}
-                                created={1235234}
-                                lastOpened={1231432}
-                                key={projectID}
-                                projectID={projectID}
-                                pathPreview={pathPreview}
-                                dispatch={dispatch}
-                            />
-                        );
-                    }
-                )}
-            </div>
+                            return (
+                                <Project
+                                    name={projectName}
+                                    created={projectCreatedTime}
+                                    lastOpened={projectLastOpenedTime}
+                                    key={projectID}
+                                    projectID={projectID}
+                                    pathPreview={pathPreview}
+                                    dispatch={dispatch}
+                                />
+                            );
+                        }
+                    )}
+                </div>
+            </>
         );
     }
 }

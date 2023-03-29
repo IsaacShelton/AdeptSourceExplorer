@@ -39,7 +39,7 @@ export async function createProject(
             ':ProjectInfrastructure': infrastructure,
             ':ProjectRootFilename': filename,
             ':ProjectCreated': time,
-            ':ProjectLastOpened': 0,
+            ':ProjectLastOpened': time,
             ':ProjectLastUpdated': time,
         }
     );

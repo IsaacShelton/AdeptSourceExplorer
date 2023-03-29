@@ -44,24 +44,23 @@ export default function CallDistribution() {
             case 'callee-vs-frequency':
                 return {
                     xLabel: 'Function Name',
-                    yLabel: 'Times Called',
-                    title: 'Function Call Frequency',
+                    yLabel: 'Times Used',
+                    title: 'Function Usage Frequency',
                     layout: 'vertical-barchart',
                     fetch: async () => {
                         let rows = await sqlite.query(
-                            `
-                            SELECT CallCallee, sum(CallAmount) as NumTimes
+                            `SELECT CallCallee, sum(CallAmount) as NumTimes
                                 FROM Call JOIN Function
                                 ON CallCallerFunctionID = FunctionID
                                 WHERE Function.ProjectID = :ProjectID
                                 GROUP BY CallCallee ORDER BY NumTimes DESC, CallCallee ASC
-                        `,
+                            `,
                             {
                                 ':ProjectID': projectID,
                             }
                         );
 
-                        let rawData = rows.map((row: any) => {
+                        let rawData = rows.map(row => {
                             return {
                                 name: row['CallCallee'],
                                 count: row['NumTimes'],
@@ -83,38 +82,34 @@ export default function CallDistribution() {
                     title: 'Function Overload Frequency',
                     layout: 'horizontal-barchart',
                     customTooltip: CustomTooltipContent,
-                    labelFormatter: (value: any) => `Having ${value} Overload${plural(value)}`,
+                    labelFormatter: value => `Having ${value} Overload${plural(value)}`,
                     fetch: async () => {
                         let rows = await sqlite.query(
-                            `
-                                SELECT Count, count(*) as Frequency
-                                    FROM (
-                                        SELECT FunctionName, count(*) as Count
-                                            FROM Function
-                                            WHERE Function.ProjectID = :ProjectID
-                                            GROUP BY FunctionName ORDER BY Count DESC, FunctionName ASC
-                                    ) as SubTable
-                                    GROUP BY Count
-                            `,
+                            `SELECT Count, count(*) as Frequency
+                                FROM (
+                                    SELECT FunctionName, count(*) as Count
+                                        FROM Function
+                                        WHERE Function.ProjectID = :ProjectID
+                                        GROUP BY FunctionName ORDER BY Count DESC, FunctionName ASC
+                                ) as SubTable
+                                GROUP BY Count`,
                             {
                                 ':ProjectID': projectID,
                             }
                         );
 
-                        let results: any[] = await Promise.all(
+                        let results = await Promise.all(
                             rows
-                                .map((row: any) => parseInt(row['Count']))
-                                .map((count: any) =>
+                                .map(row => parseInt(row['Count']))
+                                .map(count =>
                                     sqlite.query(
-                                        `
-                                SELECT FunctionName, count(*) as Count
-                                    FROM Function
-                                    WHERE Function.ProjectID = :ProjectID
-                                    GROUP BY FunctionName
-                                    HAVING Count = :Count
-                                    ORDER BY FunctionName ASC
-                                    LIMIT :Limit
-                            `,
+                                        `SELECT FunctionName, count(*) as Count
+                                            FROM Function
+                                            WHERE Function.ProjectID = :ProjectID
+                                            GROUP BY FunctionName
+                                            HAVING Count = :Count
+                                            ORDER BY FunctionName ASC
+                                            LIMIT :Limit`,
                                         {
                                             ':Count': count,
                                             ':Limit': 4,
@@ -131,11 +126,11 @@ export default function CallDistribution() {
 
                             map.set(
                                 array[0].Count,
-                                array.map((item: any) => item.FunctionName)
+                                array.map(item => item.FunctionName)
                             );
                         }
 
-                        let rawData = rows.map((row: any) => {
+                        let rawData = rows.map(row => {
                             return {
                                 name: row['Count'],
                                 count: row['Frequency'],
@@ -177,7 +172,13 @@ export default function CallDistribution() {
                 return <></>;
             case 'vertical-barchart':
                 return (
-                    <BarChart width={800} height={600} data={data ?? []} layout="vertical">
+                    <BarChart
+                        width={1000}
+                        height={600}
+                        data={data ?? []}
+                        layout="vertical"
+                        className="left-[-100px]"
+                    >
                         <XAxis
                             type="number"
                             label={{ value: yLabel, position: 'insideBottom', dy: 0 }}
@@ -188,7 +189,7 @@ export default function CallDistribution() {
                             type="category"
                             interval={data ? Math.floor(0.1 * data.length) : 0}
                             label={{ value: xLabel, position: 'insideLeft', dy: 0, angle: -90 }}
-                            width={128}
+                            width={256}
                         />
                         <Tooltip
                             labelClassName="text-black font-mono"
@@ -225,15 +226,15 @@ export default function CallDistribution() {
 
     return (
         <div className="absolute w-full h-full">
-            <div className="mt-[48px] w-full">
-                <div className="flex justify-center align-center mb-6 mt-16">
+            <div className="mt-12 w-full">
+                <div className="flex justify-center align-center mb-8 mt-[72px]">
                     <div className="custom-select">
                         <select
-                            onChange={(event) => setMode(event.target.value)}
+                            onChange={event => setMode(event.target.value)}
                             value={mode}
-                            className="text-[20px] font-mono select-none "
+                            className="text-[20px] font-mono select-none"
                         >
-                            {modes.map((mode) => {
+                            {modes.map(mode => {
                                 return (
                                     <option value={mode} key={mode}>
                                         {getInfoForMode(mode).title}
@@ -243,6 +244,44 @@ export default function CallDistribution() {
                         </select>
                     </div>
                 </div>
+                {/*
+                <div className="flex w-full text-center justify-around mb-6">
+                    <select
+                        onChange={event => setMode(event.target.value)}
+                        value={mode}
+                        className="text-[20px] font-mono select-none "
+                    >
+                        {modes.map(mode => {
+                            return (
+                                <option value={mode} key={mode}>
+                                    {getInfoForMode(mode).title}
+                                </option>
+                            );
+                        })}
+                    </select>
+                    <div>
+                        <p>Top </p>
+                        <input
+                            type="number"
+                            placeholder=""
+                            className="bg-black outline-none rounded-lg"
+                        ></input>
+                    </div>
+                    <select
+                        onChange={event => setMode(event.target.value)}
+                        value={mode}
+                        className="text-[20px] font-mono select-none"
+                    >
+                        {modes.map(mode => {
+                            return (
+                                <option value={mode} key={mode}>
+                                    {getInfoForMode(mode).title}
+                                </option>
+                            );
+                        })}
+                    </select>
+                </div>
+                    */}
                 <div className="flex justify-center m-0 p-0">
                     {isDownsampled && (
                         <div className="absolute pointer-events-none mt-6">
@@ -252,7 +291,7 @@ export default function CallDistribution() {
                         </div>
                     )}
                     {data != null && data.length > 0 && (
-                        <div className="relative left-[-32px]">{getChart(layout)}</div>
+                        <div className="relative">{getChart(layout)}</div>
                     )}
                 </div>
             </div>

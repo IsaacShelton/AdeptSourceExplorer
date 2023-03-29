@@ -9,6 +9,8 @@ import { Wave, WaveColor } from './Wave';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useProjectGlobalState } from '@/hooks/useProjectGlobalState';
 import { ProjectsAction } from '@/ProjectsDispatch';
+import { now, when } from '@/logic/now';
+import sqlite from '@/logic/sqlite';
 
 export function Project(props: {
     name: string;
@@ -21,6 +23,7 @@ export function Project(props: {
     let [length, setLength] = useState(0);
     let [activeProjectID, setActiveProjectID] = useProjectGlobalState('projectID');
     let [showAnimation, setShowAnimation] = useDelayedState(false);
+    let [lastOpened, setLastOpened] = useState(props.lastOpened);
     let borderRectRef: any = useRef(null);
 
     let active = activeProjectID == props.projectID;
@@ -48,8 +51,28 @@ export function Project(props: {
                   settings: settingsBlack,
               };
 
+    const updateLastOpenedTime = useCallback(async () => {
+        let openedTime = now();
+        setLastOpened(openedTime);
+
+        sqlite.run(
+            `UPDATE Project SET ProjectLastOpened = :ProjectLastOpened WHERE ProjectID = :ProjectID`,
+            {
+                ':ProjectID': props.projectID,
+                ':ProjectLastOpened': openedTime,
+            }
+        );
+
+        sqlite.save();
+    }, [setLastOpened]);
+
     const playStop = useCallback(() => {
-        setActiveProjectID(active ? -1 : props.projectID);
+        if (active) {
+            setActiveProjectID(-1);
+        } else {
+            setActiveProjectID(props.projectID);
+            updateLastOpenedTime();
+        }
     }, [activeProjectID]);
 
     const edit = () => props.dispatch({ type: 'edit', payload: { projectID: props.projectID } });
@@ -74,10 +97,10 @@ export function Project(props: {
     return (
         <div className="relative m-3 w-128 h-64 mb-16">
             <div className="absolute p-4 mt-8 mb-8 ml-10 w-full h-full" style={{ color: bg.text }}>
-                <p className="py-2">Name: {props.name}</p>
-                <p className="py-2">Created: {props.created}</p>
-                <p className="py-2">Last Opened: {props.lastOpened}</p>
-                <p className="py-2">{props.pathPreview}</p>
+                <p className="py-2 text-xl font-bold">{props.name}</p>
+                <p className="py-2">Created: {when(props.created)}</p>
+                <p className="py-2">Last Opened: {when(lastOpened)}</p>
+                <p className="py-2">Location: {props.pathPreview}</p>
             </div>
             <div className="absolute flex right-[-24px] bottom-0 align-center justify-right pr-[72px] select-none">
                 <img

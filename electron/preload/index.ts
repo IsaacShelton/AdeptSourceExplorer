@@ -90,22 +90,23 @@ function useLoading() {
             transform: rotate(360deg);
         }
     } `;
-    const oStyle = document.createElement('style');
-    const oDiv = document.createElement('div');
 
-    oStyle.id = 'loader';
-    oStyle.innerHTML = styleContent;
-    oDiv.className = 'outer-loader';
-    oDiv.innerHTML = '<div class="loader"></div>'
+    const styles = document.createElement('style');
+    const outerDiv = document.createElement('div');
+
+    styles.id = 'loader';
+    styles.innerHTML = styleContent;
+    outerDiv.className = 'outer-loader';
+    outerDiv.innerHTML = '<div class="loader"></div>'
 
     return {
         appendLoading() {
-            safeDOM.append(document.head, oStyle);
-            safeDOM.append(document.body, oDiv);
+            safeDOM.append(document.head, styles);
+            safeDOM.append(document.body, outerDiv);
         },
         removeLoading() {
-            safeDOM.remove(document.head, oStyle);
-            safeDOM.remove(document.body, oDiv);
+            safeDOM.remove(document.head, styles);
+            safeDOM.remove(document.body, outerDiv);
         },
     };
 }
@@ -115,8 +116,8 @@ function useLoading() {
 const { appendLoading, removeLoading } = useLoading();
 domReady().then(appendLoading);
 
-window.onmessage = (ev) => {
-    ev.data.payload === 'removeLoading' && removeLoading();
+window.onmessage = (event: MessageEvent<any>) => {
+    event.data.payload === 'removeLoading' && removeLoading();
 };
 
 setTimeout(removeLoading, 4999);

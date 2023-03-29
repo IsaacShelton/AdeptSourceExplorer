@@ -12,7 +12,7 @@ import sqlite from './logic/sqlite';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { setupDatabase } from './logic/setupDatabase';
 
-export function EditProjectDialog(props: { projectID: number; exitCreatingProject: () => void }) {
+export function EditProjectDialog(props: { projectID: number; back: () => void }) {
     let [_, setActiveProjectID] = useProjectGlobalState('projectID');
 
     const autoFill = () => {
@@ -43,7 +43,7 @@ export function EditProjectDialog(props: { projectID: number; exitCreatingProjec
     };
 
     const save = () => {
-        props.exitCreatingProject();
+        props.back();
     };
 
     let rows = useAsyncMemo(async () => {
@@ -64,21 +64,7 @@ export function EditProjectDialog(props: { projectID: number; exitCreatingProjec
             await sqlite.save();
         })().then(() => {
             setActiveProjectID(-1);
-            props.exitCreatingProject();
-        });
-    };
-
-    const reset = () => {
-        (async () => {
-            await sqlite.run('DROP TABLE IF EXISTS Project');
-            await sqlite.run('DROP TABLE IF EXISTS Function');
-            await sqlite.run('DROP TABLE IF EXISTS Composite');
-            await sqlite.run('DROP TABLE IF EXISTS Call');
-            await setupDatabase();
-            await sqlite.save();
-        })().then(() => {
-            setActiveProjectID(-1);
-            props.exitCreatingProject();
+            props.back();
         });
     };
 
@@ -91,7 +77,7 @@ export function EditProjectDialog(props: { projectID: number; exitCreatingProjec
     return (
         <div className="w-3/4 flex justify-center mt-20">
             <div className="w-full flex flex-col align-center">
-                <Button onClick={props.exitCreatingProject} iconURL={backArrowIcon} noIconShift>
+                <Button onClick={props.back} iconURL={backArrowIcon} noIconShift>
                     Back
                 </Button>
                 <span className="p-4" />
@@ -137,15 +123,6 @@ export function EditProjectDialog(props: { projectID: number; exitCreatingProjec
                     </Button>
                 </div>
                 <span className="p-8" />
-                <div className="w-full flex justify-around">
-                    <Button
-                        onClick={reset}
-                        className="mb-8 bg-red-900 hover:bg-red-800"
-                        childrenClassName="px-8"
-                    >
-                        Reset Entire Database
-                    </Button>
-                </div>
             </div>
         </div>
     );

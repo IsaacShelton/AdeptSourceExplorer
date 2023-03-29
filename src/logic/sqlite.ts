@@ -15,7 +15,7 @@ let database: Promise<Database> = new Promise(function (resolve, reject) {
 async function query(
     format: string,
     bindings: initSqlJs.BindParams | undefined = undefined
-): Promise<object[]> {
+): Promise<any[]> {
     const stmt = (await database).prepare(format);
     stmt.bind(bindings);
 
