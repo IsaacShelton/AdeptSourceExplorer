@@ -49,8 +49,10 @@
         "arrowParens": "avoid"
     },
     "dependencies": {
+        "@monaco-editor/react": "^4.4.6",
         "d3": "^7.8.2",
         "lodash": "^4.17.21",
+        "monaco-editor": "^0.36.1",
         "react-hooks-global-state": "^2.1.0",
         "react-spinners": "^0.13.8",
         "reactflow": "^11.5.6",

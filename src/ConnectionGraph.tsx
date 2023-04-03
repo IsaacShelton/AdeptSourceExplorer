@@ -6,6 +6,9 @@ import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
 import sqlite from './logic/sqlite';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
+import { promises } from 'fs';
+
+const readFile = promises.readFile;
 
 type FetchDataResult = { data: any[] | null };
 
@@ -35,6 +38,8 @@ export function ConnectionGraph() {
     let [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
     let [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
     let [projectID] = useProjectGlobalState('projectID');
+    let [, setCode] = useProjectGlobalState('code');
+    let [, setTab] = useProjectGlobalState('tab');
 
     const svgRef = useRef(null);
 
@@ -264,6 +269,16 @@ export function ConnectionGraph() {
             })
             .on('mouseout', function (d) {
                 setHoveredActive(false);
+            })
+            .on('contextmenu', function (d) {
+                let items: any[] = d3.select(this).data();
+                let data = items.length > 0 ? items[0].data : null;
+                if (data != null && data?.filename) {
+                    readFile(data?.filename).then(content => {
+                        setCode(content.toString());
+                        setTab('Code');
+                    });
+                }
             })
             .call(drag(simulation) as any);
 

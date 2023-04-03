@@ -1,3 +1,3 @@
 import { createGlobalState } from "react-hooks-global-state";
 
-export const { useGlobalState: useProjectGlobalState } = createGlobalState({ projectID: -1, filter: 'none' });
+export const { useGlobalState: useProjectGlobalState } = createGlobalState({ projectID: -1, filter: 'none', code: '', tab: 'Project' });

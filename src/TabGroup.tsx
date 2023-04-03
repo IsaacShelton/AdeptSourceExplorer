@@ -4,6 +4,7 @@ import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 import Projects from './Projects';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
+import { CodeViewer } from './CodeViewer';
 
 const Tab = (props: { active: boolean; children?: ReactNode; onClick: () => any }) => {
     let style = props.active
@@ -29,7 +30,7 @@ const ButtonGroup = (props: { children?: ReactNode }) => {
     );
 };
 
-const tabNames = ['Project', 'Function View', 'Call Distribution', 'Connection Graph'];
+const tabNames = ['Project', 'Function View', 'Call Distribution', 'Connection Graph', 'Code'];
 
 const TabContent = (kind: string) => {
     switch (kind) {
@@ -41,13 +42,15 @@ const TabContent = (kind: string) => {
             return <CallDistribution />;
         case 'Connection Graph':
             return <ConnectionGraph />;
+        case 'Code':
+            return <CodeViewer />;
         default:
             return <></>;
     }
 };
 
 export default function TabGroup() {
-    const [active, setActive] = useState(tabNames[0]);
+    const [active, setActive] = useProjectGlobalState('tab');
     const [projectID] = useProjectGlobalState('projectID');
 
     let viewableTabNames: any[] = projectID < 0 ? tabNames.slice(0, 1) : tabNames;
