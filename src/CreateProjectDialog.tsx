@@ -1,6 +1,6 @@
 import child_process from 'child_process';
 import { basename, dirname } from 'path';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { Button } from './components/Button';
 import { Label } from './components/Label';
 import { TextInput } from './components/TextInput';
@@ -12,6 +12,9 @@ import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 export function CreateProjectDialog(props: { exitCreatingProject: () => void }) {
     let [_, setActiveProjectID] = useProjectGlobalState('projectID');
+    let infrastructureInputRef = useRef<HTMLInputElement>(null);
+    let rootFileInputRef = useRef<HTMLInputElement>(null);
+    let nameInputRef = useRef<HTMLInputElement>(null);
 
     const autoFill = () => {
         child_process.exec(
@@ -52,15 +55,16 @@ export function CreateProjectDialog(props: { exitCreatingProject: () => void }) 
         let filename = rootFileInputRef.current.value;
         let infrastructure = infrastructureInputRef.current.value;
 
-        createProject(name, filename, infrastructure).then((newProjectID) => {
-            props.exitCreatingProject();
-            setActiveProjectID(newProjectID);
-        });
+        createProject(name, filename, infrastructure)
+            .then(newProjectID => {
+                props.exitCreatingProject();
+                setActiveProjectID(newProjectID);
+            })
+            .catch(e => {
+                alert(e.message);
+                props.exitCreatingProject();
+            });
     };
-
-    let infrastructureInputRef = useRef<HTMLInputElement>(null);
-    let rootFileInputRef = useRef<HTMLInputElement>(null);
-    let nameInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <div className="w-3/4 flex justify-center mt-20">

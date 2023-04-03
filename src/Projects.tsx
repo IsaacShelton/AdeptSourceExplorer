@@ -11,6 +11,7 @@ import sortIcon from './assets/filterGray.svg';
 import settingsIcon from './assets/settingsGray.svg';
 import { AllSettingsDialog } from './AllSettingsDialog';
 import { formatNumber } from './logic/formatNumber';
+import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 export default function Projects() {
     let [state, dispatch] = useReducer(
@@ -38,6 +39,9 @@ export default function Projects() {
         }
     );
 
+    let [filter, setFilter] = useProjectGlobalState('filter');
+    let [activeProjectID, _] = useProjectGlobalState('projectID');
+
     let newProject = useCallback(() => dispatch({ type: 'create' }), [dispatch]);
     let viewProjects = useCallback(() => dispatch({ type: 'projects' }), [dispatch]);
     let allSettings = useCallback(() => dispatch({ type: 'settings' }), [dispatch]);
@@ -45,9 +49,10 @@ export default function Projects() {
     let rows = useAsyncMemo(
         async () =>
             await sqlite.query(
-                `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated FROM Project`
+                `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated FROM Project
+                ORDER BY ${filter == 'none' ? 'ProjectCreated ASC' : 'ProjectLastOpened DESC'}`
             ),
-        [state]
+        [state, filter, activeProjectID]
     );
 
     let funcsInfo = useAsyncMemo(
@@ -64,6 +69,10 @@ export default function Projects() {
         async () => await sqlite.query(`SELECT count(*) as NumCalls FROM Call`),
         [state]
     );
+
+    let cycleFilter = useCallback(() => {
+        setFilter(filter == 'none' ? 'recent' : 'none');
+    }, [filter]);
 
     let numFunctions = funcsInfo ? (funcsInfo as any)[0]['NumFunctions'] : 0;
     let numComposites = compositesInfo ? (compositesInfo as any)[0]['NumComposites'] : 0;
@@ -106,10 +115,17 @@ export default function Projects() {
                             <p className="px-4">Composites: {formatNumber(numComposites)}</p>
                             <p className="px-4">Calls: {formatNumber(numCalls)}</p>
                         </div>
-                        <img src={sortIcon} className="float-right px-12 select-none" />
+                        <img
+                            src={sortIcon}
+                            className="float-right px-12 select-none transition-transform origin-center"
+                            style={{ transform: `${filter != 'none' ? 'rotateX(180deg)' : ''}` }}
+                            draggable="false"
+                            onClick={cycleFilter}
+                        />
                         <img
                             src={settingsIcon}
                             className="float-right pl-12 select-none"
+                            draggable="false"
                             onClick={allSettings}
                         />
                     </div>

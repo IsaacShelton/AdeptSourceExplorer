@@ -20,6 +20,10 @@ export async function createProject(
         features: ['include-arg-info', 'include-calls'],
     });
 
+    if (result == null || typeof result != 'object' || result.ast == null) {
+        throw new Error("Encountered syntax error. Static analysis could not be performed.");
+    }
+
     let time = now();
 
     let projectID = await sqlite.insert(

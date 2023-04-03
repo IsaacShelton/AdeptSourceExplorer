@@ -10,7 +10,6 @@ import magic from './assets/magic.svg';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import sqlite from './logic/sqlite';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
-import { setupDatabase } from './logic/setupDatabase';
 
 export function EditProjectDialog(props: { projectID: number; back: () => void }) {
     let [_, setActiveProjectID] = useProjectGlobalState('projectID');
@@ -43,7 +42,34 @@ export function EditProjectDialog(props: { projectID: number; back: () => void }
     };
 
     const save = () => {
-        props.back();
+        if (
+            nameInputRef.current == null ||
+            rootFileInputRef.current == null ||
+            infrastructureInputRef.current == null
+        ) {
+            return;
+        }
+
+        sqlite
+            .run(
+                `
+            UPDATE Project SET
+                ProjectName = :ProjectName,
+                ProjectRootFilename = :ProjectRootFilename,
+                ProjectInfrastructure = :ProjectInfrastructure
+            WHERE ProjectID = :ProjectID`,
+                {
+                    ':ProjectID': props.projectID,
+                    ':ProjectName': nameInputRef.current.value,
+                    ':ProjectRootFilename': rootFileInputRef.current.value,
+                    ':ProjectInfrastructure': infrastructureInputRef.current.value,
+                }
+            )
+            .then(() => {
+                sqlite.save().then(() => {
+                    props.back();
+                });
+            });
     };
 
     let rows = useAsyncMemo(async () => {
@@ -57,7 +83,8 @@ export function EditProjectDialog(props: { projectID: number; back: () => void }
 
     const del = () => {
         (async () => {
-            await sqlite.query(`DELETE FROM Project WHERE ProjectID = :ProjectID`, {
+            await sqlite.run(`PRAGMA foreign_keys=ON`);
+            await sqlite.run(`DELETE FROM Project WHERE ProjectID = :ProjectID`, {
                 ':ProjectID': props.projectID,
             });
 
