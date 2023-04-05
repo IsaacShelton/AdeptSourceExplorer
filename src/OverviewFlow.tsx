@@ -25,7 +25,7 @@ const OverviewFlow = () => {
     const [, setCode] = useProjectGlobalState('code');
     const [, setTab] = useProjectGlobalState('tab');
     const [, setRange] = useProjectGlobalState('range');
-    const [name, setName] = useState('main');
+    const [name, setName] = useProjectGlobalState('function');
 
     let functionNameRef = useRef<HTMLInputElement>(null);
 

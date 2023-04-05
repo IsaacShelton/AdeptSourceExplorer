@@ -13,6 +13,7 @@ import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 export function CreateProjectDialog(props: { exitCreatingProject: () => void }) {
     let [, setActiveProjectID] = useProjectGlobalState('projectID');
     let [, setCode] = useProjectGlobalState('code');
+    let [, setFunctionName] = useProjectGlobalState('function');
 
     let infrastructureInputRef = useRef<HTMLInputElement>(null);
     let rootFileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +62,7 @@ export function CreateProjectDialog(props: { exitCreatingProject: () => void }) 
             .then(newProjectID => {
                 setActiveProjectID(newProjectID);
                 setCode('');
+                setFunctionName('main');
                 props.exitCreatingProject();
             })
             .catch(e => {

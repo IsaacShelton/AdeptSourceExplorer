@@ -20,12 +20,13 @@ export function Project(props: {
     pathPreview: string;
     dispatch: React.Dispatch<ProjectsAction>;
 }) {
-    let [length, setLength] = useState(0);
-    let [activeProjectID, setActiveProjectID] = useProjectGlobalState('projectID');
+    const [length, setLength] = useState(0);
+    const [activeProjectID, setActiveProjectID] = useProjectGlobalState('projectID');
     const [, setCode] = useProjectGlobalState('code');
-    let [showAnimation, setShowAnimation] = useDelayedState(false);
-    let [lastOpened, setLastOpened] = useState(props.lastOpened);
-    let borderRectRef: any = useRef(null);
+    const [, setFunctionName] = useProjectGlobalState('function');
+    const [showAnimation, setShowAnimation] = useDelayedState(false);
+    const [lastOpened, setLastOpened] = useState(props.lastOpened);
+    const borderRectRef: any = useRef(null);
 
     let active = activeProjectID == props.projectID;
 
@@ -74,6 +75,7 @@ export function Project(props: {
         } else {
             setActiveProjectID(props.projectID);
             setCode('');
+            setFunctionName('main');
             updateLastOpenedTime();
         }
     }, [activeProjectID]);
