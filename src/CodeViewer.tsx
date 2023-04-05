@@ -67,6 +67,11 @@ export function CodeViewer(props: {}) {
             if (range != null && model != null) {
                 let { startIndex, endIndex } = range;
 
+                // If (end index + end stride) bleeds onto next line, don't highlight the next line
+                if (0 < endIndex && endIndex < code.length && code[endIndex - 1] == '\n') {
+                    endIndex--;
+                }
+
                 let start = model.getPositionAt(startIndex);
                 let end = model.getPositionAt(endIndex);
 
