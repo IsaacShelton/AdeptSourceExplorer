@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ReactFlow, {
     addEdge,
     MiniMap,
@@ -16,12 +16,18 @@ import 'reactflow/dist/style.css';
 import FlowNodeLabel, { FlowNodeLabelIcon } from './components/FlowNodeLabel';
 import sqlite from './logic/sqlite';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
+import { viewFile } from './logic/viewFile';
 
 const OverviewFlow = () => {
     // Create nodes
 
-    let [projectID] = useProjectGlobalState('projectID');
-    let [name, setName] = useState('main');
+    const [projectID] = useProjectGlobalState('projectID');
+    const [, setCode] = useProjectGlobalState('code');
+    const [, setTab] = useProjectGlobalState('tab');
+    const [, setRange] = useProjectGlobalState('range');
+    const [name, setName] = useState('main');
+
+    let functionNameRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         (async () => {
@@ -69,7 +75,13 @@ const OverviewFlow = () => {
                 }
             );
 
-            let main: any[] = [{ kind: 'function', name, numOverloads: overloads.get(name) }];
+            let main: any[] = [
+                {
+                    kind: 'function',
+                    name,
+                    numOverloads: overloads.get(name),
+                },
+            ];
 
             let inputs: any[] = callersTable.map((row: any) => {
                 return {
@@ -150,8 +162,12 @@ const OverviewFlow = () => {
 
             setNodes(initialNodes);
             setEdges(initialEdges);
+
+            if (functionNameRef.current != null) {
+                functionNameRef.current.value = name;
+            }
         })();
-    }, [name]);
+    }, [name, functionNameRef]);
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -165,40 +181,91 @@ const OverviewFlow = () => {
     }, []);
 
     const onClickElement: NodeMouseHandler = useCallback((event, element) => {
-        if (element?.data?.name != null) {
-            setName(element?.data?.name);
-        }
+        if (element?.data?.name == null) return;
+
+        setName(element.data.name);
     }, []);
 
+    const onRightClickElement: NodeMouseHandler = useCallback(
+        (event, element) => {
+            if (element?.data?.name == null) return;
+
+            sqlite
+                .query(
+                    `SELECT FunctionDefinition, FunctionSourceObject, FunctionSourceIndex, FunctionEndIndex, FunctionEndStride FROM Function WHERE ProjectID = :ProjectID AND FunctionName = :FunctionName ORDER BY FunctionID ASC`,
+                    {
+                        ':ProjectID': projectID,
+                        ':FunctionName': element.data.name,
+                    }
+                )
+                .then(rows => {
+                    if (rows.length > 0) {
+                        let beginning = rows[0]['FunctionSourceIndex'];
+                        let end = rows[0]['FunctionEndIndex'] + rows[0]['FunctionEndStride'];
+
+                        viewFile(
+                            rows[0]['FunctionSourceObject'],
+                            setCode,
+                            setTab,
+                            setRange,
+                            beginning,
+                            end
+                        );
+                    }
+                });
+        },
+        [projectID, setCode, setTab, setRange]
+    );
+
+    const goto = useCallback(() => {
+        if (functionNameRef.current == null) return;
+
+        setName(functionNameRef.current.value);
+    }, [functionNameRef]);
+
     return (
-        <div className="absolute flex m-0 p-0 w-full h-full justify-center">
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeClick={onClickElement}
-                elementsSelectable={false}
-                edgesFocusable={false}
-                nodesConnectable={false}
-                fitView
-                zoomOnDoubleClick={false}
-                attributionPosition="top-right"
-                proOptions={{ hideAttribution: true }}
-            >
-                <MiniMap
-                    nodeColor={getNodeColor}
-                    maskColor="#3a3a3aBB"
-                    nodeBorderRadius={20}
-                    style={{ height: 120, background: '#2f2f2f' }}
-                    zoomable
-                    pannable
-                />
-                {/* <Controls /> */}
-                <Background color="#aaa" gap={16} />
-            </ReactFlow>
-        </div>
+        <>
+            <div className="absolute flex m-0 p-0 w-full h-full justify-center">
+                <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    onNodeClick={onClickElement}
+                    onNodeContextMenu={onRightClickElement}
+                    elementsSelectable={false}
+                    edgesFocusable={false}
+                    nodesConnectable={false}
+                    fitView
+                    zoomOnDoubleClick={false}
+                    attributionPosition="top-right"
+                    proOptions={{ hideAttribution: true }}
+                >
+                    <MiniMap
+                        nodeColor={getNodeColor}
+                        maskColor="#3a3a3aBB"
+                        nodeBorderRadius={20}
+                        style={{ height: 120, background: '#2f2f2f' }}
+                        zoomable
+                        pannable
+                    />
+                    <Background color="#aaa" gap={16} />
+                </ReactFlow>
+            </div>
+            <div className="w-full h-10 bg-[#202020] absolute mt-10">
+                <div className="flex justify-left">
+                    <input
+                        type="text"
+                        className="mt-1 bg-[#101010] w-96 outline-none decoration-transparent font-mono px-2 mx-4 py-1 text-[#404040] focus:text-[#707070] selection:bg-[#303030]"
+                        ref={functionNameRef}
+                    />
+                    <button className="bg-[#303030] px-4 mt-1 rounded-lg" onClick={goto}>
+                        Go to
+                    </button>
+                </div>
+            </div>
+        </>
     );
 };
 

@@ -12,7 +12,8 @@ import sqlite from './logic/sqlite';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 
 export function EditProjectDialog(props: { projectID: number; back: () => void }) {
-    let [_, setActiveProjectID] = useProjectGlobalState('projectID');
+    let [, setActiveProjectID] = useProjectGlobalState('projectID');
+    let [, setCode] = useProjectGlobalState('code');
 
     const autoFill = () => {
         child_process.exec(
@@ -91,6 +92,7 @@ export function EditProjectDialog(props: { projectID: number; back: () => void }
             await sqlite.save();
         })().then(() => {
             setActiveProjectID(-1);
+            setCode('');
             props.back();
         });
     };

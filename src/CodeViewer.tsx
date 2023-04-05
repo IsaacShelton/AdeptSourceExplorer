@@ -9,6 +9,7 @@ import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
 import { useEffect, useRef, useState } from 'react';
 import { keywords, builtinTypes, constants } from './adept';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
+import './code-highlight.css';
 
 self.MonacoEnvironment = {
     getWorker(_, label) {
@@ -34,8 +35,9 @@ const monacoInstance = loader.init();
 
 export function CodeViewer(props: {}) {
     let ref: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
-    let [code, setCode] = useProjectGlobalState('code');
+    let [code] = useProjectGlobalState('code');
     let [instance, setInstance] = useState<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
+    let [range] = useProjectGlobalState('range');
 
     useEffect(() => {
         monacoInstance.then(monaco => {
@@ -47,6 +49,7 @@ export function CodeViewer(props: {}) {
                     automaticLayout: true,
                     cursorSmoothCaretAnimation: 'on',
                     smoothScrolling: true,
+                    readOnly: true,
                 };
 
                 setupLanguage(monaco);
@@ -57,7 +60,42 @@ export function CodeViewer(props: {}) {
 
     useEffect(() => {
         if (instance) {
-            instance.getModel()?.setValue(code);
+            let model = instance.getModel();
+
+            model?.setValue(code);
+
+            if (range != null && model != null) {
+                let { startIndex, endIndex } = range;
+
+                let start = model.getPositionAt(startIndex);
+                let end = model.getPositionAt(endIndex);
+
+                instance.setPosition(start);
+                instance.revealLineInCenter(start.lineNumber);
+
+                model.deltaDecorations(
+                    [],
+                    [
+                        {
+                            range: new monacoEditor.Range(
+                                start.lineNumber,
+                                start.column,
+                                end.lineNumber,
+                                end.column
+                            ),
+                            options: {
+                                className: 'code-highlight',
+                                zIndex: -100,
+                                isWholeLine: true,
+                                overviewRuler: {
+                                    color: '#555555',
+                                    position: monacoEditor.editor.OverviewRulerLane.Full,
+                                },
+                            },
+                        },
+                    ]
+                );
+            }
         }
     }, [code, instance]);
 

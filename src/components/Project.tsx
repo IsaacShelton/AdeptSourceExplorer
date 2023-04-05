@@ -22,6 +22,7 @@ export function Project(props: {
 }) {
     let [length, setLength] = useState(0);
     let [activeProjectID, setActiveProjectID] = useProjectGlobalState('projectID');
+    const [, setCode] = useProjectGlobalState('code');
     let [showAnimation, setShowAnimation] = useDelayedState(false);
     let [lastOpened, setLastOpened] = useState(props.lastOpened);
     let borderRectRef: any = useRef(null);
@@ -69,8 +70,10 @@ export function Project(props: {
     const playStop = useCallback(() => {
         if (active) {
             setActiveProjectID(-1);
+            setCode('');
         } else {
             setActiveProjectID(props.projectID);
+            setCode('');
             updateLastOpenedTime();
         }
     }, [activeProjectID]);

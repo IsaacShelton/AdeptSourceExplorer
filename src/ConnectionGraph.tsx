@@ -7,6 +7,7 @@ import { plural } from './logic/plural';
 import sqlite from './logic/sqlite';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import { promises } from 'fs';
+import { viewFile } from './logic/viewFile';
 
 const readFile = promises.readFile;
 
@@ -34,12 +35,13 @@ export function ConnectionGraph() {
     const viewWidth = 1200;
     const viewHeight = 800;
 
-    let [mode, setMode] = useGlobalState('mode');
-    let [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
-    let [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
-    let [projectID] = useProjectGlobalState('projectID');
-    let [, setCode] = useProjectGlobalState('code');
-    let [, setTab] = useProjectGlobalState('tab');
+    const [mode, setMode] = useGlobalState('mode');
+    const [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
+    const [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
+    const [projectID] = useProjectGlobalState('projectID');
+    const [, setCode] = useProjectGlobalState('code');
+    const [, setTab] = useProjectGlobalState('tab');
+    const [, setRange] = useProjectGlobalState('range');
 
     const svgRef = useRef(null);
 
@@ -274,10 +276,7 @@ export function ConnectionGraph() {
                 let items: any[] = d3.select(this).data();
                 let data = items.length > 0 ? items[0].data : null;
                 if (data != null && data?.filename) {
-                    readFile(data?.filename).then(content => {
-                        setCode(content.toString());
-                        setTab('Code');
-                    });
+                    viewFile(data.filename, setCode, setTab, setRange);
                 }
             })
             .call(drag(simulation) as any);
@@ -306,7 +305,7 @@ export function ConnectionGraph() {
         return () => {
             simulation.stop();
         };
-    }, [data]);
+    }, [data, setCode, setTab, setRange]);
 
     return (
         <>

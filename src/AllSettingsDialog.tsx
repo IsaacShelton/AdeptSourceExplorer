@@ -8,7 +8,8 @@ import { useCallback } from 'react';
 import { shell } from 'electron';
 
 export function AllSettingsDialog(props: { back: () => void }) {
-    let [_, setActiveProjectID] = useProjectGlobalState('projectID');
+    let [, setActiveProjectID] = useProjectGlobalState('projectID');
+    let [, setCode] = useProjectGlobalState('code');
 
     const reset = () => {
         (async () => {
@@ -20,6 +21,7 @@ export function AllSettingsDialog(props: { back: () => void }) {
             await sqlite.save();
         })().then(() => {
             setActiveProjectID(-1);
+            setCode('');
             props.back();
         });
     };

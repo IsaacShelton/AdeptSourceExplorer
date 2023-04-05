@@ -52,6 +52,7 @@ const TabContent = (kind: string) => {
 export default function TabGroup() {
     const [active, setActive] = useProjectGlobalState('tab');
     const [projectID] = useProjectGlobalState('projectID');
+    const [code] = useProjectGlobalState('code');
 
     let viewableTabNames: any[] = projectID < 0 ? tabNames.slice(0, 1) : tabNames;
 
@@ -61,11 +62,18 @@ export default function TabGroup() {
 
             <div className="fixed top-0 flex m-0 p-0 w-full">
                 <ButtonGroup>
-                    {viewableTabNames.map(type => (
-                        <Tab key={type} active={active === type} onClick={() => setActive(type)}>
-                            {type}
-                        </Tab>
-                    ))}
+                    {viewableTabNames.map(
+                        type =>
+                            !(type == 'Code' && code === '') && (
+                                <Tab
+                                    key={type}
+                                    active={active === type}
+                                    onClick={() => setActive(type)}
+                                >
+                                    {type}
+                                </Tab>
+                            )
+                    )}
                 </ButtonGroup>
             </div>
         </>

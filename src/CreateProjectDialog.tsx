@@ -11,7 +11,9 @@ import magic from './assets/magic.svg';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
 export function CreateProjectDialog(props: { exitCreatingProject: () => void }) {
-    let [_, setActiveProjectID] = useProjectGlobalState('projectID');
+    let [, setActiveProjectID] = useProjectGlobalState('projectID');
+    let [, setCode] = useProjectGlobalState('code');
+
     let infrastructureInputRef = useRef<HTMLInputElement>(null);
     let rootFileInputRef = useRef<HTMLInputElement>(null);
     let nameInputRef = useRef<HTMLInputElement>(null);
@@ -57,8 +59,9 @@ export function CreateProjectDialog(props: { exitCreatingProject: () => void }) 
 
         createProject(name, filename, infrastructure)
             .then(newProjectID => {
-                props.exitCreatingProject();
                 setActiveProjectID(newProjectID);
+                setCode('');
+                props.exitCreatingProject();
             })
             .catch(e => {
                 alert(e.message);
