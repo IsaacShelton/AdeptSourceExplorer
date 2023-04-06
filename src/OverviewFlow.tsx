@@ -25,6 +25,7 @@ const OverviewFlow = () => {
     const [, setCode] = useProjectGlobalState('code');
     const [, setTab] = useProjectGlobalState('tab');
     const [, setRange] = useProjectGlobalState('range');
+    const [, setFilename] = useProjectGlobalState('filename');
     const [name, setName] = useProjectGlobalState('function');
 
     let functionNameRef = useRef<HTMLInputElement>(null);
@@ -206,6 +207,7 @@ const OverviewFlow = () => {
                         viewFile(
                             rows[0]['FunctionSourceObject'],
                             setCode,
+                            setFilename,
                             setTab,
                             setRange,
                             beginning,
@@ -214,7 +216,7 @@ const OverviewFlow = () => {
                     }
                 });
         },
-        [projectID, setCode, setTab, setRange]
+        [projectID, setCode, setFilename, setTab, setRange]
     );
 
     const goto = useCallback(() => {
@@ -258,7 +260,14 @@ const OverviewFlow = () => {
                     <input
                         type="text"
                         className="mt-1 bg-[#101010] w-96 outline-none decoration-transparent font-mono px-2 mx-4 py-1 text-[#404040] focus:text-[#707070] selection:bg-[#303030]"
+                        onFocus={event => event.target.select()}
+                        onKeyDown={event => {
+                            if (event.key === 'Enter') {
+                                goto();
+                            }
+                        }}
                         ref={functionNameRef}
+                        spellCheck={false}
                     />
                     <button className="bg-[#303030] px-4 mt-1 rounded-lg" onClick={goto}>
                         Go to

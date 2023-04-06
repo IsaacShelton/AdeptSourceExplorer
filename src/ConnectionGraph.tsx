@@ -40,6 +40,7 @@ export function ConnectionGraph() {
     const [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
     const [projectID] = useProjectGlobalState('projectID');
     const [, setCode] = useProjectGlobalState('code');
+    const [, setFilename] = useProjectGlobalState('filename');
     const [, setTab] = useProjectGlobalState('tab');
     const [, setRange] = useProjectGlobalState('range');
 
@@ -276,7 +277,7 @@ export function ConnectionGraph() {
                 let items: any[] = d3.select(this).data();
                 let data = items.length > 0 ? items[0].data : null;
                 if (data != null && data?.filename) {
-                    viewFile(data.filename, setCode, setTab, setRange);
+                    viewFile(data.filename, setCode, setFilename, setTab, setRange);
                 }
             })
             .call(drag(simulation) as any);
@@ -305,7 +306,7 @@ export function ConnectionGraph() {
         return () => {
             simulation.stop();
         };
-    }, [data, setCode, setTab, setRange]);
+    }, [data, setCode, setFilename, setTab, setRange]);
 
     return (
         <>

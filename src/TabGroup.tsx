@@ -1,10 +1,12 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import CallDistribution from './CallDistribution';
 import { ConnectionGraph } from './ConnectionGraph';
 import OverviewFlow from './OverviewFlow';
 import Projects from './Projects';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import { CodeViewer } from './CodeViewer';
+import sqlite from './logic/sqlite';
+import CancelablePromise, { cancelable } from 'cancelable-promise';
 
 const Tab = (props: { active: boolean; children?: ReactNode; onClick: () => any }) => {
     let style = props.active
@@ -54,7 +56,33 @@ export default function TabGroup() {
     const [projectID] = useProjectGlobalState('projectID');
     const [code] = useProjectGlobalState('code');
 
-    let viewableTabNames: any[] = projectID < 0 ? tabNames.slice(0, 1) : tabNames;
+    let waitingOn = useRef({ titlePromise: null as CancelablePromise<any[]> | null });
+
+    // Update title to include project name when a project is active.
+    useEffect(() => {
+        if (waitingOn.current.titlePromise != null) {
+            waitingOn.current.titlePromise.cancel();
+        }
+
+        if (projectID >= 0) {
+            waitingOn.current.titlePromise = cancelable(
+                sqlite.query(`SELECT ProjectName FROM Project WHERE ProjectID = :ProjectID`, {
+                    ':ProjectID': projectID,
+                })
+            );
+
+            waitingOn.current.titlePromise.then(rows => {
+                if (rows.length > 0) {
+                    let projectName = rows[0]['ProjectName'];
+                    document.title = `Adept Source Explorer - [${projectName}]`;
+                }
+            });
+        } else {
+            document.title = `Adept Source Explorer`;
+        }
+    }, [projectID]);
+
+    let viewableTabNames: string[] = projectID < 0 ? tabNames.slice(0, 1) : tabNames;
 
     return (
         <>

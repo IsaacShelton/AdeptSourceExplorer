@@ -50,6 +50,7 @@
     },
     "dependencies": {
         "@monaco-editor/react": "^4.4.6",
+        "cancelable-promise": "^4.3.1",
         "d3": "^7.8.2",
         "lodash": "^4.17.21",
         "monaco-editor": "^0.36.1",

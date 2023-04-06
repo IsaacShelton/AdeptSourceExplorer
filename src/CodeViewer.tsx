@@ -38,6 +38,7 @@ export function CodeViewer(props: {}) {
     let [code] = useProjectGlobalState('code');
     let [instance, setInstance] = useState<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
     let [range] = useProjectGlobalState('range');
+    let [filename] = useProjectGlobalState('filename');
 
     useEffect(() => {
         monacoInstance.then(monaco => {
@@ -105,8 +106,15 @@ export function CodeViewer(props: {}) {
     }, [code, instance]);
 
     return (
-        <div className="m-0 p-0 pt-10 w-full h-full">
-            <div className="w-full h-full" ref={ref} />
+        <div className="flex flex-col w-full h-full">
+            <div className="bg-[#202020] p-4 h-4 w-full mt-10 flex items-center">
+                <p className="font-mono text-sm text-[#777777] selection:bg-[#404040]">
+                    {filename}
+                </p>
+            </div>
+            <div className="m-0 p-0 w-full grow">
+                <div className="w-full h-full" ref={ref} />
+            </div>
         </div>
     );
 }
