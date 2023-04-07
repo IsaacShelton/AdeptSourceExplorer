@@ -2,15 +2,14 @@ import { XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
 import sqlite from './logic/sqlite';
 import { createGlobalState } from 'react-hooks-global-state';
 import { CustomTooltipContent } from './CustomTooltip';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import { downsample } from './logic/downsample';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
-import './CallDistribution.css';
 import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart';
-import { viewFile } from './logic/viewFile';
 import { viewFunction } from './logic/viewFunction';
+import './CallDistribution.css';
 
 const modes = ['callee-vs-frequency', 'function-name-vs-frequency'];
 const { useGlobalState } = createGlobalState({
@@ -140,6 +139,7 @@ export default function CallDistribution() {
 
                         let rawData = rows.map(row => {
                             let topNames = map.get(parseInt(row['Count']));
+
                             return {
                                 name: row['Count'],
                                 count: row['Frequency'],
@@ -177,9 +177,18 @@ export default function CallDistribution() {
 
     let { data, isDownsampled } = useAsyncMemo(fetch, [projectID, mode]) ?? defaultFetchResult;
 
-    const view: CategoricalChartFunc = (nextState, event) => {
-        viewFunction(projectID, nextState.activeLabel, setCode, setFilename, setTab, setRange);
-    };
+    const view: CategoricalChartFunc = useCallback(
+        (nextState, event) => {
+            let jumpName = nextState?.activePayload
+                ? nextState?.activePayload[0]?.payload?.jumpName
+                : 0;
+
+            if (jumpName) {
+                viewFunction(projectID, jumpName, setCode, setFilename, setTab, setRange);
+            }
+        },
+        [projectID, setCode, setFilename, setTab, setRange]
+    );
 
     let onChartChange = useCallback((node: any) => {
         if (node != null) {
