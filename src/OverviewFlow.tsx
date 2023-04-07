@@ -17,6 +17,7 @@ import FlowNodeLabel, { FlowNodeLabelIcon } from './components/FlowNodeLabel';
 import sqlite from './logic/sqlite';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import { viewFile } from './logic/viewFile';
+import { viewFunction } from './logic/viewFunction';
 
 const OverviewFlow = () => {
     // Create nodes
@@ -198,30 +199,7 @@ const OverviewFlow = () => {
         (event, element) => {
             if (element?.data?.name == null) return;
 
-            sqlite
-                .query(
-                    `SELECT FunctionDefinition, FunctionSourceObject, FunctionSourceIndex, FunctionEndIndex, FunctionEndStride FROM Function WHERE ProjectID = :ProjectID AND FunctionName = :FunctionName ORDER BY FunctionID ASC`,
-                    {
-                        ':ProjectID': projectID,
-                        ':FunctionName': element.data.name,
-                    }
-                )
-                .then(rows => {
-                    if (rows.length > 0) {
-                        let beginning = rows[0]['FunctionSourceIndex'];
-                        let end = rows[0]['FunctionEndIndex'] + rows[0]['FunctionEndStride'];
-
-                        viewFile(
-                            rows[0]['FunctionSourceObject'],
-                            setCode,
-                            setFilename,
-                            setTab,
-                            setRange,
-                            beginning,
-                            end
-                        );
-                    }
-                });
+            viewFunction(projectID, element.data.name, setCode, setFilename, setTab, setRange);
         },
         [projectID, setCode, setFilename, setTab, setRange]
     );

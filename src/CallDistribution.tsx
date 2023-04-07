@@ -2,12 +2,15 @@ import { XAxis, YAxis, Tooltip, BarChart, Bar } from 'recharts';
 import sqlite from './logic/sqlite';
 import { createGlobalState } from 'react-hooks-global-state';
 import { CustomTooltipContent } from './CustomTooltip';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { downsample } from './logic/downsample';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import './CallDistribution.css';
+import { CategoricalChartFunc } from 'recharts/types/chart/generateCategoricalChart';
+import { viewFile } from './logic/viewFile';
+import { viewFunction } from './logic/viewFunction';
 
 const modes = ['callee-vs-frequency', 'function-name-vs-frequency'];
 const { useGlobalState } = createGlobalState({
@@ -33,6 +36,10 @@ type ChartInfo = {
 export default function CallDistribution() {
     let [mode, setMode] = useGlobalState('mode');
     let [projectID] = useProjectGlobalState('projectID');
+    const [, setCode] = useProjectGlobalState('code');
+    const [, setFilename] = useProjectGlobalState('filename');
+    const [, setTab] = useProjectGlobalState('tab');
+    const [, setRange] = useProjectGlobalState('range');
 
     const defaultFetchResult = {
         data: null,
@@ -64,6 +71,7 @@ export default function CallDistribution() {
                             return {
                                 name: row['CallCallee'],
                                 count: row['NumTimes'],
+                                jumpName: row['CallCallee'],
                             };
                         });
 
@@ -131,10 +139,12 @@ export default function CallDistribution() {
                         }
 
                         let rawData = rows.map(row => {
+                            let topNames = map.get(parseInt(row['Count']));
                             return {
                                 name: row['Count'],
                                 count: row['Frequency'],
-                                topNames: map.get(parseInt(row['Count'])),
+                                topNames,
+                                jumpName: topNames && topNames.length > 0 ? topNames[0] : undefined,
                             };
                         });
 
@@ -164,65 +174,94 @@ export default function CallDistribution() {
         () => getInfoForMode(mode),
         [projectID, mode]
     );
+
     let { data, isDownsampled } = useAsyncMemo(fetch, [projectID, mode]) ?? defaultFetchResult;
 
-    const getChart = (layout: ChartLayout) => {
-        switch (layout) {
-            case 'none':
-                return <></>;
-            case 'vertical-barchart':
-                return (
-                    <BarChart
-                        width={1000}
-                        height={600}
-                        data={data ?? []}
-                        layout="vertical"
-                        className="left-[-100px]"
-                    >
-                        <XAxis
-                            type="number"
-                            label={{ value: yLabel, position: 'insideBottom', dy: 0 }}
-                            height={48}
-                        />
-                        <YAxis
-                            dataKey="name"
-                            type="category"
-                            interval={data ? Math.floor(0.1 * data.length) : 0}
-                            label={{ value: xLabel, position: 'insideLeft', dy: 0, angle: -90 }}
-                            width={256}
-                        />
-                        <Tooltip
-                            labelClassName="text-black font-mono"
-                            content={customTooltip as any}
-                            labelFormatter={labelFormatter}
-                        />
-                        <Bar dataKey="count" fill="#8884d8" />
-                    </BarChart>
-                );
-            case 'horizontal-barchart':
-                return (
-                    <BarChart width={800} height={600} data={data ?? []}>
-                        <XAxis
-                            dataKey="name"
-                            label={{ value: xLabel, position: 'insideBottom', dy: 0 }}
-                            height={54}
-                            interval={data ? Math.floor(0.1 * data.length) : 0}
-                        />
-                        <YAxis
-                            label={{ value: yLabel, position: 'insideLeft', angle: -90, dx: -2 }}
-                        />
-                        <Tooltip
-                            labelClassName="text-black font-mono"
-                            content={customTooltip as any}
-                            labelFormatter={labelFormatter}
-                        />
-                        <Bar dataKey="count" fill="#8884d8" />
-                    </BarChart>
-                );
-            default:
-                throw new Error('Unknown chart layout kind');
-        }
+    const view: CategoricalChartFunc = (nextState, event) => {
+        viewFunction(projectID, nextState.activeLabel, setCode, setFilename, setTab, setRange);
     };
+
+    let onChartChange = useCallback((node: any) => {
+        if (node != null) {
+            node.container.oncontextmenu = (e: MouseEvent) => {
+                node.handleClick(e);
+            };
+        }
+    }, []);
+
+    const getChart = useCallback(
+        (layout: ChartLayout) => {
+            switch (layout) {
+                case 'none':
+                    return <></>;
+                case 'vertical-barchart':
+                    return (
+                        <BarChart
+                            width={1000}
+                            height={600}
+                            data={data ?? []}
+                            layout="vertical"
+                            className="left-[-100px]"
+                            onClick={view}
+                            ref={onChartChange}
+                        >
+                            <XAxis
+                                type="number"
+                                label={{ value: yLabel, position: 'insideBottom', dy: 0 }}
+                                height={48}
+                            />
+                            <YAxis
+                                dataKey="name"
+                                type="category"
+                                interval={data ? Math.floor(0.1 * data.length) : 0}
+                                label={{ value: xLabel, position: 'insideLeft', dy: 0, angle: -90 }}
+                                width={256}
+                            />
+                            <Tooltip
+                                labelClassName="text-black font-mono"
+                                content={customTooltip as any}
+                                labelFormatter={labelFormatter}
+                            />
+                            <Bar dataKey="count" fill="#8884d8" />
+                        </BarChart>
+                    );
+                case 'horizontal-barchart':
+                    return (
+                        <BarChart
+                            width={800}
+                            height={600}
+                            data={data ?? []}
+                            onClick={view}
+                            ref={onChartChange}
+                        >
+                            <XAxis
+                                dataKey="name"
+                                label={{ value: xLabel, position: 'insideBottom', dy: 0 }}
+                                height={54}
+                                interval={data ? Math.floor(0.1 * data.length) : 0}
+                            />
+                            <YAxis
+                                label={{
+                                    value: yLabel,
+                                    position: 'insideLeft',
+                                    angle: -90,
+                                    dx: -2,
+                                }}
+                            />
+                            <Tooltip
+                                labelClassName="text-black font-mono"
+                                content={customTooltip as any}
+                                labelFormatter={labelFormatter}
+                            />
+                            <Bar dataKey="count" fill="#8884d8" />
+                        </BarChart>
+                    );
+                default:
+                    throw new Error('Unknown chart layout kind');
+            }
+        },
+        [onChartChange, data, customTooltip]
+    );
 
     return (
         <div className="absolute w-full h-full">
@@ -244,44 +283,6 @@ export default function CallDistribution() {
                         </select>
                     </div>
                 </div>
-                {/*
-                <div className="flex w-full text-center justify-around mb-6">
-                    <select
-                        onChange={event => setMode(event.target.value)}
-                        value={mode}
-                        className="text-[20px] font-mono select-none "
-                    >
-                        {modes.map(mode => {
-                            return (
-                                <option value={mode} key={mode}>
-                                    {getInfoForMode(mode).title}
-                                </option>
-                            );
-                        })}
-                    </select>
-                    <div>
-                        <p>Top </p>
-                        <input
-                            type="number"
-                            placeholder=""
-                            className="bg-black outline-none rounded-lg"
-                        ></input>
-                    </div>
-                    <select
-                        onChange={event => setMode(event.target.value)}
-                        value={mode}
-                        className="text-[20px] font-mono select-none"
-                    >
-                        {modes.map(mode => {
-                            return (
-                                <option value={mode} key={mode}>
-                                    {getInfoForMode(mode).title}
-                                </option>
-                            );
-                        })}
-                    </select>
-                </div>
-                    */}
                 <div className="flex justify-center m-0 p-0">
                     {isDownsampled && (
                         <div className="absolute pointer-events-none mt-6">
