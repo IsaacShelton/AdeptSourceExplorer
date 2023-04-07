@@ -29,6 +29,8 @@ const OverviewFlow = () => {
     const [name, setName] = useProjectGlobalState('function');
 
     let functionNameRef = useRef<HTMLInputElement>(null);
+    let callersRef = useRef<HTMLParagraphElement>(null);
+    let calleesRef = useRef<HTMLParagraphElement>(null);
 
     useEffect(() => {
         (async () => {
@@ -110,6 +112,11 @@ const OverviewFlow = () => {
                 return { ...output, nodeId: 'o-' + output.name, nodeType: 'output' };
             });
 
+            if (callersRef.current != null && calleesRef.current != null) {
+                callersRef.current.textContent = `${inputs.length} Callers`;
+                calleesRef.current.textContent = `${outputs.length} Callees`;
+            }
+
             if (inputs.length > 0) {
                 let totalHeight = inputs.reduce((acc, item) => acc + getHeightEstimate(item), 0);
                 let x = -400;
@@ -168,7 +175,7 @@ const OverviewFlow = () => {
                 functionNameRef.current.value = name;
             }
         })();
-    }, [name, functionNameRef]);
+    }, [name, functionNameRef, callersRef, calleesRef]);
 
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -272,6 +279,14 @@ const OverviewFlow = () => {
                     <button className="bg-[#303030] px-4 mt-1 rounded-lg" onClick={goto}>
                         Go to
                     </button>
+                    <div className="flex justify-end grow">
+                        <p className="mt-2 px-10 font-mono text-[#666666]" ref={callersRef}>
+                            0 Callers
+                        </p>
+                        <p className="mt-2 px-10 font-mono text-[#666666]" ref={calleesRef}>
+                            0 Callees
+                        </p>
+                    </div>
                 </div>
             </div>
         </>
