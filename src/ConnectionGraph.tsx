@@ -6,10 +6,7 @@ import { useAsyncMemo } from './hooks/useAsyncMemo';
 import { plural } from './logic/plural';
 import sqlite from './logic/sqlite';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
-import { promises } from 'fs';
 import { viewFile } from './logic/viewFile';
-
-const readFile = promises.readFile;
 
 type FetchDataResult = { data: any[] | null };
 
@@ -19,7 +16,7 @@ type ConnectionGraphInfo = {
     fetch: () => Promise<FetchDataResult>;
 };
 
-const modes = ['functions-per-file', 'composites-per-file'];
+const modes = ['functions-per-file', 'composites-per-file', 'enums-per-file'];
 const { useGlobalState } = createGlobalState({
     mode: modes[0],
     data: null as object | null,
@@ -35,14 +32,15 @@ export function ConnectionGraph() {
     const viewWidth = 1200;
     const viewHeight = 800;
 
-    const [mode, setMode] = useGlobalState('mode');
-    const [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
-    const [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
     const [projectID] = useProjectGlobalState('projectID');
     const [, setCode] = useProjectGlobalState('code');
     const [, setFilename] = useProjectGlobalState('filename');
     const [, setTab] = useProjectGlobalState('tab');
     const [, setRange] = useProjectGlobalState('range');
+
+    const [mode, setMode] = useGlobalState('mode');
+    const [hoveredData, setHoveredData]: any | null = useGlobalState('hoveredData');
+    const [hoveredActive, setHoveredActive] = useGlobalState('hoveredActive');
 
     const svgRef = useRef(null);
 
@@ -83,10 +81,9 @@ export function ConnectionGraph() {
                     unit: 'Function',
                     fetch: async () => {
                         let rows: any[] = await sqlite.query(
-                            `SELECT FunctionName, FunctionSourceObject
+                            `SELECT DISTINCT FunctionName, FunctionSourceObject
                                 FROM Function
                                 WHERE Function.ProjectID = :ProjectID
-                                GROUP BY FunctionName, FunctionSourceObject
                             `,
                             {
                                 ':ProjectID': projectID,
@@ -140,10 +137,9 @@ export function ConnectionGraph() {
                     unit: 'Composite',
                     fetch: async () => {
                         let rows: any[] = await sqlite.query(
-                            `SELECT CompositeName, CompositeSourceObject
+                            `SELECT DISTINCT CompositeName, CompositeSourceObject
                                 FROM Composite
                                 WHERE Composite.ProjectID = :ProjectID
-                                GROUP BY CompositeName, CompositeSourceObject
                             `,
                             {
                                 ':ProjectID': projectID,
@@ -162,11 +158,11 @@ export function ConnectionGraph() {
 
                         let newData: any = { children: [], isRoot: true };
 
-                        for (let [key, funcs] of map) {
+                        for (let [key, composites] of map) {
                             newData.children.push({
                                 name: path.basename(key),
                                 filename: key,
-                                children: Array.from(funcs).map(compositeName => {
+                                children: Array.from(composites).map(compositeName => {
                                     return { compositeName };
                                 }),
                             });
@@ -175,16 +171,77 @@ export function ConnectionGraph() {
                         // Pre-calculations
                         newData.radius = 8;
                         newData.color = '#00000000';
-                        newData.charge = -100;
+                        newData.charge = -200;
                         for (let node of newData.children) {
                             node.radius = 15;
                             node.color = '#00000000';
-                            node.charge = -100;
+                            node.charge = -200;
 
                             for (let child of node.children) {
                                 child.radius = 3.5;
                                 child.color = '#8884d8';
-                                child.charge = -10;
+                                child.charge = -30;
+                            }
+                        }
+
+                        return { data: newData };
+                    },
+                };
+            case 'enums-per-file':
+                return {
+                    title: 'Enums per File',
+                    unit: 'Enum',
+                    fetch: async () => {
+                        let rows: any[] = await sqlite.query(
+                            `SELECT DISTINCT EnumName, EnumSourceObject
+                                FROM Enum
+                                WHERE Enum.ProjectID = :ProjectID
+                            `,
+                            {
+                                ':ProjectID': projectID,
+                            }
+                        );
+
+                        let map: Map<string, Set<string>> = new Map();
+                        let rest = [];
+
+                        for (let { EnumName, EnumSourceObject } of rows) {
+                            if (EnumSourceObject != null) {
+                                if (!map.has(EnumSourceObject)) {
+                                    map.set(EnumSourceObject, new Set());
+                                }
+
+                                map.get(EnumSourceObject)?.add(EnumName);
+                            } else {
+                                rest.push(EnumName);
+                            }
+                        }
+
+                        let newData: any = { children: [], isRoot: true };
+
+                        for (let [key, enums] of map) {
+                            newData.children.push({
+                                name: path.basename(key),
+                                filename: key,
+                                children: Array.from(enums).map(enumName => {
+                                    return { enumName };
+                                }),
+                            });
+                        }
+
+                        // Pre-calculations
+                        newData.radius = 8;
+                        newData.color = '#00000000';
+                        newData.charge = -300;
+                        for (let node of newData.children) {
+                            node.radius = 15;
+                            node.color = '#00000000';
+                            node.charge = -300;
+
+                            for (let child of node.children) {
+                                child.radius = 3.5;
+                                child.color = '#8884d8';
+                                child.charge = -30;
                             }
                         }
 

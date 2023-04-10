@@ -50,6 +50,7 @@ export async function createProject(
 
     let funcs: any[] = result?.ast?.functions;
     let composites: any[] = result?.ast?.composites;
+    let enums: any[] = result?.ast?.enums;
     let calls: any[] = result?.calls;
     let funcIndices: number[] = [];
 
@@ -104,6 +105,29 @@ export async function createProject(
                     ':ProjectID': projectID,
                 }
             );
+        }
+    }
+
+    if (enums) {
+        for (let enumDefinition of enums) {
+            await sqlite.run(`
+                INSERT INTO Enum VALUES (
+                    NULL,
+                    :EnumName,
+                    :EnumDefinition,
+                    :EnumSourceObject,
+                    :EnumSourceIndex,
+                    :EnumSourceStride,
+                    :ProjectID
+                )
+            `, {
+                ':EnumName': enumDefinition?.name,
+                ':EnumDefinition': enumDefinition?.definition,
+                ':EnumSourceObject': enumDefinition?.source?.object,
+                ':EnumSourceIndex': enumDefinition?.source?.index,
+                ':EnumSourceStride': enumDefinition?.source?.stride,
+                ':ProjectID': projectID,
+            });
         }
     }
 
