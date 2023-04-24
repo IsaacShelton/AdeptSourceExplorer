@@ -49,8 +49,9 @@ export default function Projects() {
     let rows = useAsyncMemo(
         async () =>
             await sqlite.query(
-                `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated FROM Project
-                ORDER BY ${filter == 'none' ? 'ProjectCreated ASC' : 'ProjectLastOpened DESC'}`
+                `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure, ProjectCreated, ProjectLastOpened, ProjectUpdated
+                    FROM Project
+                    ORDER BY ${filter == 'none' ? 'ProjectCreated ASC' : 'ProjectLastOpened DESC'}`
             ),
         [state, filter, activeProjectID]
     );

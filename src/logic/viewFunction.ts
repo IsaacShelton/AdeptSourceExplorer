@@ -6,7 +6,10 @@ export function viewFunction(projectID: number, functionName: string | null | un
 
     sqlite
         .query(
-            `SELECT FunctionDefinition, FunctionSourceObject, FunctionSourceIndex, FunctionEndIndex, FunctionEndStride FROM Function WHERE ProjectID = :ProjectID AND FunctionName = :FunctionName ORDER BY FunctionID ASC`,
+            `SELECT FunctionDefinition, FunctionSourceObject, FunctionSourceIndex, FunctionEndIndex, FunctionEndStride
+                FROM Function
+                WHERE ProjectID = :ProjectID AND FunctionName = :FunctionName
+                ORDER BY FunctionID ASC`,
             {
                 ':ProjectID': projectID,
                 ':FunctionName': functionName,

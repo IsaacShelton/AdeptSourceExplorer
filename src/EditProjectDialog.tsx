@@ -60,7 +60,9 @@ export function EditProjectDialog(props: { projectID: number; back: () => void }
 
     let rows = useAsyncMemo(async () => {
         return await sqlite.query(
-            `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure FROM Project WHERE ProjectID = :ProjectID`,
+            `SELECT ProjectID, ProjectName, ProjectRootFilename, ProjectInfrastructure
+                FROM Project
+                WHERE ProjectID = :ProjectID`,
             {
                 ':ProjectID': props.projectID,
             }

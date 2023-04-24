@@ -26,8 +26,7 @@ export async function createProject(
 
     let time = now();
 
-    let projectID = await sqlite.insert(
-        `
+    let projectID = await sqlite.insert(`
             INSERT INTO Project VALUES (
                 NULL,
                 :ProjectName,
@@ -57,18 +56,18 @@ export async function createProject(
     if (funcs) {
         for (let func of funcs) {
             funcIndices.push(
-                await sqlite.insert(
-                    `INSERT INTO Function VALUES (
-                    NULL,
-                    :FunctionName,
-                    :FunctionDefinition,
-                    :FunctionSourceObject,
-                    :FunctionSourceIndex,
-                    :FunctionSourceStride,
-                    :FunctionEndIndex,
-                    :FunctionEndStride,
-                    :ProjectID
-                )`,
+                await sqlite.insert(`
+                    INSERT INTO Function VALUES (
+                        NULL,
+                        :FunctionName,
+                        :FunctionDefinition,
+                        :FunctionSourceObject,
+                        :FunctionSourceIndex,
+                        :FunctionSourceStride,
+                        :FunctionEndIndex,
+                        :FunctionEndStride,
+                        :ProjectID
+                    )`,
                     {
                         ':FunctionName': func.name,
                         ':FunctionDefinition': func.definition,
@@ -79,23 +78,22 @@ export async function createProject(
                         ':FunctionEndStride': func.end.stride,
                         ':ProjectID': projectID,
                     }
-                )
-            );
+                ));
         }
     }
 
     if (composites) {
         for (let composite of composites) {
-            await sqlite.run(
-                `INSERT INTO Composite VALUES (
-                NULL,
-                :CompositeName,
-                :CompositeDefinition,
-                :CompositeSourceObject,
-                :CompositeSourceIndex,
-                :CompositeSourceStride,
-                :ProjectID
-            )`,
+            await sqlite.run(`
+                INSERT INTO Composite VALUES (
+                    NULL,
+                    :CompositeName,
+                    :CompositeDefinition,
+                    :CompositeSourceObject,
+                    :CompositeSourceIndex,
+                    :CompositeSourceStride,
+                    :ProjectID
+                )`,
                 {
                     ':CompositeName': composite.name,
                     ':CompositeDefinition': composite.definition,
@@ -103,8 +101,7 @@ export async function createProject(
                     ':CompositeSourceIndex': composite.source.index,
                     ':CompositeSourceStride': composite.source.stride,
                     ':ProjectID': projectID,
-                }
-            );
+                });
         }
     }
 
@@ -119,15 +116,15 @@ export async function createProject(
                     :EnumSourceIndex,
                     :EnumSourceStride,
                     :ProjectID
-                )
-            `, {
-                ':EnumName': enumDefinition?.name,
-                ':EnumDefinition': enumDefinition?.definition,
-                ':EnumSourceObject': enumDefinition?.source?.object,
-                ':EnumSourceIndex': enumDefinition?.source?.index,
-                ':EnumSourceStride': enumDefinition?.source?.stride,
-                ':ProjectID': projectID,
-            });
+                )`,
+                {
+                    ':EnumName': enumDefinition?.name,
+                    ':EnumDefinition': enumDefinition?.definition,
+                    ':EnumSourceObject': enumDefinition?.source?.object,
+                    ':EnumSourceIndex': enumDefinition?.source?.index,
+                    ':EnumSourceStride': enumDefinition?.source?.stride,
+                    ':ProjectID': projectID,
+                });
         }
     }
 
@@ -136,12 +133,12 @@ export async function createProject(
             let callsTo = calls[funcIndex];
 
             for (let call of callsTo) {
-                await sqlite.run(
-                    `INSERT INTO Call VALUES (
-                    :CallCallee,
-                    :CallAmount,
-                    :CallCallerFunctionID
-                )`,
+                await sqlite.run(`
+                    INSERT INTO Call VALUES (
+                        :CallCallee,
+                        :CallAmount,
+                        :CallCallerFunctionID
+                    )`,
                     {
                         ':CallCallee': call.name,
                         ':CallAmount': call.count,

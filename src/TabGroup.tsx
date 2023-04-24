@@ -66,9 +66,14 @@ export default function TabGroup() {
 
         if (projectID >= 0) {
             waitingOn.current.titlePromise = cancelable(
-                sqlite.query(`SELECT ProjectName FROM Project WHERE ProjectID = :ProjectID`, {
-                    ':ProjectID': projectID,
-                })
+                sqlite.query(
+                    `SELECT ProjectName
+                        FROM Project
+                        WHERE ProjectID = :ProjectID`,
+                    {
+                        ':ProjectID': projectID,
+                    }
+                )
             );
 
             waitingOn.current.titlePromise.then(rows => {

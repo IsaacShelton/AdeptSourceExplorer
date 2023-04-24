@@ -35,7 +35,10 @@ const OverviewFlow = () => {
     useEffect(() => {
         (async () => {
             let numOverloadsTable: any[] = await sqlite.query(
-                `SELECT FunctionName, count(*) AS NumOverloads FROM Function WHERE ProjectID = :ProjectID GROUP BY FunctionName`,
+                `SELECT FunctionName, count(*) AS NumOverloads
+                    FROM Function
+                    WHERE ProjectID = :ProjectID
+                    GROUP BY FunctionName`,
                 {
                     ':ProjectID': projectID,
                 }
