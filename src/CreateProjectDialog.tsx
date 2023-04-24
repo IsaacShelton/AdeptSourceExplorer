@@ -10,6 +10,45 @@ import selectFileIcon from './assets/selectFile.svg';
 import magic from './assets/magic.svg';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 
+// @ts-ignore
+import { shellPath } from 'shell-path';
+
+export async function autoFillInfrastructure(
+    infrastructureInputRef: React.RefObject<HTMLInputElement>
+) {
+    let PATH = await shellPath();
+
+    child_process.exec(
+        'adept --root',
+        { env: { ...process.env, PATH } },
+        (err: child_process.ExecException | null, stdout: string, _) => {
+            if (infrastructureInputRef.current == null) return;
+
+            if (err && err.code && err.code > 1) {
+                console.log(err);
+                infrastructureInputRef.current.value = 'Error: No Adept compiler in path';
+            } else {
+                infrastructureInputRef.current.value = stdout.trim();
+            }
+        }
+    );
+}
+
+export function pickRootFile(
+    rootFileInputRef: React.RefObject<HTMLInputElement>,
+    nameInputRef: React.RefObject<HTMLInputElement>
+) {
+    (window as any).electronAPI.openFile().then((filename: string | null) => {
+        if (filename && rootFileInputRef.current) {
+            rootFileInputRef.current.value = filename;
+
+            if (nameInputRef.current && nameInputRef.current.value == '') {
+                nameInputRef.current.value = basename(dirname(filename));
+            }
+        }
+    });
+}
+
 export function CreateProjectDialog(props: { exitCreatingProject: () => void }) {
     let [, setActiveProjectID] = useProjectGlobalState('projectID');
     let [, setCode] = useProjectGlobalState('code');
@@ -19,32 +58,15 @@ export function CreateProjectDialog(props: { exitCreatingProject: () => void }) 
     let rootFileInputRef = useRef<HTMLInputElement>(null);
     let nameInputRef = useRef<HTMLInputElement>(null);
 
-    const autoFill = () => {
-        child_process.exec(
-            'adept --root',
-            (err: child_process.ExecException | null, stdout: string, _) => {
-                if (infrastructureInputRef.current == null) return;
+    const autoFill = useCallback(
+        () => autoFillInfrastructure(infrastructureInputRef),
+        [infrastructureInputRef]
+    );
 
-                if (err && err.code && err.code > 1) {
-                    infrastructureInputRef.current.value = 'Error: No Adept compiler in path';
-                } else {
-                    infrastructureInputRef.current.value = stdout.trim();
-                }
-            }
-        );
-    };
-
-    const pickFile = () => {
-        (window as any).electronAPI.openFile().then((filename: string | null) => {
-            if (filename && rootFileInputRef.current) {
-                rootFileInputRef.current.value = filename;
-
-                if (nameInputRef.current && nameInputRef.current.value == '') {
-                    nameInputRef.current.value = basename(dirname(filename));
-                }
-            }
-        });
-    };
+    const pickFile = useCallback(
+        () => pickRootFile(rootFileInputRef, nameInputRef),
+        [rootFileInputRef, nameInputRef]
+    );
 
     const create = () => {
         if (

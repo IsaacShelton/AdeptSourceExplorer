@@ -2,6 +2,7 @@
     "name": "adept-source-explorer",
     "version": "0.0.1",
     "main": "dist-electron/main/index.js",
+    "productName": "Adept Source Explorer",
     "description": "Adept Source Explorer",
     "author": "Isaac Shelton",
     "license": "MIT",
@@ -22,7 +23,6 @@
         "@types/node": "^18.14.6",
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
-        "@types/sql.js": "^1.4.4",
         "@types/styled-components": "^5.1.26",
         "@vitejs/plugin-react": "^3.1.0",
         "autoprefixer": "^10.4.14",
@@ -52,13 +52,15 @@
         "@monaco-editor/react": "^4.4.6",
         "cancelable-promise": "^4.3.1",
         "d3": "^7.8.2",
+        "fix-path": "^4.0.0",
         "lodash": "^4.17.21",
         "monaco-editor": "^0.36.1",
         "react-hooks-global-state": "^2.1.0",
         "react-spinners": "^0.13.8",
         "reactflow": "^11.5.6",
         "recharts": "^2.4.3",
-        "sql.js": "^1.8.0",
+        "shell-env": "^4.0.1",
+        "shell-path": "^3.0.0",
         "styled-components": "^5.3.8"
     }
 }

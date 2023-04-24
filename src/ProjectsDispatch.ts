@@ -1,5 +1,5 @@
 
-export type ProjectsSubmenu = 'projects' | 'create' | 'edit' | 'settings';
+export type ProjectsSubmenu = ProjectsAction['type'];
 
 export type ProjectsState = {
     submenu: ProjectsSubmenu;

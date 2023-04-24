@@ -1,6 +1,4 @@
-import child_process from 'child_process';
-import { basename, dirname } from 'path';
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { Button } from './components/Button';
 import { Label } from './components/Label';
 import { TextInput } from './components/TextInput';
@@ -10,37 +8,25 @@ import magic from './assets/magic.svg';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
 import sqlite from './logic/sqlite';
 import { useAsyncMemo } from './hooks/useAsyncMemo';
+import { autoFillInfrastructure, pickRootFile } from './CreateProjectDialog';
 
 export function EditProjectDialog(props: { projectID: number; back: () => void }) {
     let [, setActiveProjectID] = useProjectGlobalState('projectID');
     let [, setCode] = useProjectGlobalState('code');
 
-    const autoFill = () => {
-        child_process.exec(
-            'adept --root',
-            (err: child_process.ExecException | null, stdout: string, _) => {
-                if (infrastructureInputRef.current == null) return;
+    let infrastructureInputRef = useRef<HTMLInputElement>(null);
+    let rootFileInputRef = useRef<HTMLInputElement>(null);
+    let nameInputRef = useRef<HTMLInputElement>(null);
 
-                if (err && err.code && err.code > 1) {
-                    infrastructureInputRef.current.value = 'Error: No Adept compiler in path';
-                } else {
-                    infrastructureInputRef.current.value = stdout.trim();
-                }
-            }
-        );
-    };
+    const autoFill = useCallback(
+        () => autoFillInfrastructure(infrastructureInputRef),
+        [infrastructureInputRef]
+    );
 
-    const pickFile = () => {
-        (window as any).electronAPI.openFile().then((filename: string | null) => {
-            if (filename && rootFileInputRef.current) {
-                rootFileInputRef.current.value = filename;
-
-                if (nameInputRef.current && nameInputRef.current.value == '') {
-                    nameInputRef.current.value = basename(dirname(filename));
-                }
-            }
-        });
-    };
+    const pickFile = useCallback(
+        () => pickRootFile(rootFileInputRef, nameInputRef),
+        [rootFileInputRef, nameInputRef]
+    );
 
     const save = () => {
         if (
@@ -98,10 +84,6 @@ export function EditProjectDialog(props: { projectID: number; back: () => void }
     };
 
     let row: any = rows && rows.length > 0 ? rows[0] : {};
-
-    let infrastructureInputRef = useRef<HTMLInputElement>(null);
-    let rootFileInputRef = useRef<HTMLInputElement>(null);
-    let nameInputRef = useRef<HTMLInputElement>(null);
 
     return (
         <div className="w-3/4 flex justify-center mt-20">
