@@ -1,6 +1,6 @@
 # AdeptSourceExplorer
 
-<img src="https://raw.github.com/AdeptLanguage/Adept/master/.github/icon.png" width="256" height="256">
+<img src="https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/.github/icon.png?raw=true" width="256" height="256">
 
 Visualize and perform static analysis on your Adept projects
 
