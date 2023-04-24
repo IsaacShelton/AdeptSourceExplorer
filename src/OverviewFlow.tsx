@@ -16,7 +16,6 @@ import 'reactflow/dist/style.css';
 import FlowNodeLabel, { FlowNodeLabelIcon } from './components/FlowNodeLabel';
 import sqlite from './logic/sqlite';
 import { useProjectGlobalState } from './hooks/useProjectGlobalState';
-import { viewFile } from './logic/viewFile';
 import { viewFunction } from './logic/viewFunction';
 
 const OverviewFlow = () => {

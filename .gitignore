@@ -9,3 +9,4 @@ dist-electron
 .DS_Store
 release
 database.db
+project.md

@@ -39,12 +39,11 @@ export function EditProjectDialog(props: { projectID: number; back: () => void }
 
         sqlite
             .run(
-                `
-            UPDATE Project SET
-                ProjectName = :ProjectName,
-                ProjectRootFilename = :ProjectRootFilename,
-                ProjectInfrastructure = :ProjectInfrastructure
-            WHERE ProjectID = :ProjectID`,
+                `UPDATE Project SET
+                        ProjectName = :ProjectName,
+                        ProjectRootFilename = :ProjectRootFilename,
+                        ProjectInfrastructure = :ProjectInfrastructure
+                    WHERE ProjectID = :ProjectID`,
                 {
                     ':ProjectID': props.projectID,
                     ':ProjectName': nameInputRef.current.value,
