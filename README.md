@@ -1,6 +1,6 @@
 # AdeptSourceExplorer
 
-<img src="https://raw.github.com/IsaacShelton/AdeptSourceExplorer/master/.github/icon.png" width="256" height="256">
+<img src="https://raw.github.com/AdeptLanguage/Adept/master/.github/icon.png" width="256" height="256">
 
 Visualize and perform static analysis on your Adept projects
 
@@ -12,15 +12,17 @@ npm run build # Release
 
 # Screenshots
 
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss1.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss2.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss3.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss4.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss5.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss6.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss7.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss8.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss9.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss10.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss11.png)
-![](https://github.com/IsaacShelton/AdeptSourceExplorer/raw/master/github/ss12.png)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/.github/ss1.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss2.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss3.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss4.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss5.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss6.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss7.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss8.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss9.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss10.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss11.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss12.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss13.png?raw=true)
+![](https://github.com/IsaacShelton/AdeptSourceExplorer/blob/master/github/ss14.png?raw=true)
